@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Minitab Ultimate - QA/QC Engine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Web Minitab Ultimate - Mobile Ready</title>
     <!-- D3.js 數據視覺化套件 -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
@@ -56,20 +56,36 @@
         .stat-card .value { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-top: 8px; font-family: ui-monospace, monospace; }
 
         /* ANOVA Table Style */
+        .anova-table-container { width: 100%; overflow-x: auto; }
         .anova-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: right; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02);}
-        .anova-table th { background: #f5f5f7; padding: 10px; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+        .anova-table th { background: #f5f5f7; padding: 10px; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; }
         .anova-table td { padding: 10px; border-bottom: 1px solid var(--border); color: var(--text-primary); font-family: ui-monospace, monospace;}
         .anova-table th:first-child, .anova-table td:first-child { text-align: left; font-weight: 600; font-family: -apple-system, sans-serif;}
 
         /* Charts Controls */
-        .segment-control { display: flex; background: #eef0f4; padding: 4px; border-radius: 10px; width: fit-content; margin-bottom: 16px; gap: 4px;}
-        .seg-btn { background: transparent; border: none; padding: 6px 14px; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; color: var(--text-secondary); transition: 0.2s; }
+        .chart-header-actions { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+        .segment-control { display: flex; background: #eef0f4; padding: 4px; border-radius: 10px; width: fit-content; gap: 4px; flex-wrap: wrap; }
+        .seg-btn { background: transparent; border: none; padding: 6px 16px; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; color: var(--text-secondary); transition: 0.2s; }
         .seg-btn.active { background: #fff; color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 
         .chart-container { position: relative; width: 100%; height: 450px; background: #fff; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
         
         /* Tooltip */
         #tooltip { position: absolute; background: rgba(29, 29, 31, 0.85); backdrop-filter: blur(10px); color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 13px; pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.15); line-height: 1.4; }
+
+        /* 行動裝置響應式設計 (RWD) */
+        @media (max-width: 800px) {
+            body { padding: 20px 10px; }
+            .header h1 { font-size: 26px; }
+            .grid-layout { grid-template-columns: 1fr; gap: 16px; }
+            .panel { padding: 16px; }
+            .chart-container { height: 350px; }
+            .stat-row { grid-template-columns: repeat(2, 1fr); }
+            .segment-control { width: 100%; justify-content: center; }
+            .seg-btn { flex: 1; text-align: center; padding: 8px 4px; font-size: 12px; }
+            .chart-header-actions { flex-direction: column; align-items: stretch; }
+            .btn-export { justify-content: center; padding: 10px; font-size: 14px; }
+        }
     </style>
 </head>
 <body>
@@ -100,7 +116,7 @@
                     <optgroup label="Basic Statistics">
                         <option value="desc">Descriptive Statistics</option>
                         <option value="1samp">1-Sample T-Test</option>
-                        <option value="2samp">2-Sample T-Test (Independent)</option>
+                        <option value="2samp">2-Sample T-Test</option>
                         <option value="anova">One-Way ANOVA</option>
                         <option value="reg">Simple Linear Regression</option>
                     </optgroup>
@@ -120,7 +136,7 @@
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="chart-header-actions">
                 <div class="segment-control" id="chartControls" style="display: none;">
                     <button class="seg-btn" id="btnHist" onclick="setChartType('hist')">Histogram</button>
                     <button class="seg-btn" id="btnBox" onclick="setChartType('box')">Boxplot</button>
@@ -143,7 +159,6 @@
 <div id="tooltip"></div>
 
 <script>
-    // --- 1. Data Handler & UI logic ---
     let dataset = {};
     let headers = [];
     let currentChartType = 'box';
@@ -156,7 +171,6 @@
         reader.readAsText(file);
     });
 
-    // 預設工業製造業測試數據 (含厚度、硬度)
     const defaultData = "Part_ID\tThickness\tHardness\n1\t12.5\t45.2\n2\t13.1\t47.5\n3\t11.9\t46.0\n4\t12.8\t48.8\n5\t14.2\t51.2\n6\t13.5\t50.5\n7\t12.1\t46.5\n8\t13.8\t49.8\n9\t12.9\t47.0\n10\t13.2\t48.5\n11\t12.4\t46.2\n12\t13.6\t49.1";
     document.getElementById('dataInput').value = defaultData;
 
@@ -202,7 +216,7 @@
             html += `<div class="control-group"><label>Sample 1:</label><select id="col1">${getOptionsHTML(1)}</select></div>`;
             html += `<div class="control-group"><label>Sample 2:</label><select id="col2">${getOptionsHTML(2)}</select></div>`;
         } else if (type === 'anova') {
-            html += `<div class="control-group"><label>Select Groups (Ctrl/Cmd to multi-select):</label>
+            html += `<div class="control-group"><label>Select Groups (Multi-select):</label>
                      <select id="colMulti" multiple style="height: 110px;">${getOptionsHTML()}</select></div>`;
         } else if (type === 'reg') {
             html += `<div class="control-group"><label>Predictor (X):</label><select id="colX">${getOptionsHTML(1)}</select></div>`;
@@ -210,7 +224,6 @@
         }
         container.innerHTML = html;
         
-        // Setup Chart Buttons
         document.getElementById('chartControls').style.display = 'flex';
         document.getElementById('btnExport').style.display = 'flex';
         const btns = ['Hist', 'Box', 'Scatter', 'QQ', 'SPC', 'Cpk'];
@@ -235,13 +248,11 @@
         if(Object.keys(analysisState).length > 0) renderChart();
     }
 
-    // --- 2. 核心統計與微積分數學引擎 ---
     function clean(arr) { return arr.filter(x => x !== null); }
     function mean(arr) { return d3.mean(arr); }
     function std(arr) { return d3.deviation(arr); }
     function variance(arr) { return d3.variance(arr); }
 
-    // 標準常態反函數 (NormInv - Beasley-Springer-Moro algorithm) - 繪製 Q-Q Plot 必備
     function normInv(p) {
         const a0=2.50662823884, a1=-18.61500062529, a2=41.39119773534, a3=-25.44106049237;
         const b1=-8.47351093090, b2=23.08336743743, b3=-21.06224101826, b4=3.13082909833;
@@ -252,16 +263,12 @@
         else { let r = p; if (x > 0) r = 1 - p; r = Math.log(-Math.log(r)); let z = c0 + r * (c1 + r * (c2 + r * c3)) / (1 + r * (d1 + r * d2)); return x < 0 ? z : -z; }
     }
 
-    // 標準常態 PDF
     function normalPDF(x, m, s) { return (1 / (s * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - m) / s, 2)); }
-
-    // T-Test CDF
     function gamma(z) { const g=7, p=[0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7]; if (z < 0.5) return Math.PI / (Math.sin(Math.PI * z) * gamma(1 - z)); z -= 1; let x = p[0]; for (let i = 1; i < g + 2; i++) x += p[i] / (z + i); return Math.sqrt(2 * Math.PI) * Math.pow(z + g + 0.5, z + 0.5) * Math.exp(-(z + g + 0.5)) * x; }
     function tDistPDF(t, df) { return (gamma((df + 1) / 2) / (Math.sqrt(df * Math.PI) * gamma(df / 2))) * Math.pow(1 + (t * t) / df, -(df + 1) / 2); }
     function tCDF(t_stat, df) { const limit = Math.abs(t_stat), step = 0.005; let area = 0; for (let x = 0; x < limit; x += step) area += (tDistPDF(x, df) + tDistPDF(x + step, df)) / 2 * step; return Math.max(0, Math.min(1, 1 - 2 * area)); }
     function fCDF(f_stat, d1, d2) { if (f_stat <= 0) return 1; const step = 0.005; let area = 0; for (let x = 0; x < f_stat; x += step) area += ( (Math.pow(d1/d2, d1/2)*Math.pow(x, d1/2-1)) / (Math.pow(1+(d1/d2)*x, (d1+d2)/2) * (gamma(d1/2)*gamma(d2/2)/gamma((d1+d2)/2))) + (Math.pow(d1/d2, d1/2)*Math.pow(x+step, d1/2-1)) / (Math.pow(1+(d1/d2)*(x+step), (d1+d2)/2) * (gamma(d1/2)*gamma(d2/2)/gamma((d1+d2)/2))) ) / 2 * step; return Math.max(0, Math.min(1, 1 - area)); }
 
-    // --- 3. 分析執行中心 ---
     function runAnalysis() {
         const type = document.getElementById('analysisType').value;
         const resArea = document.getElementById('resultsArea');
@@ -294,11 +301,10 @@
                     <div class="stat-card" style="border-color: ${p<0.05?'#ffcdd2':'var(--border)'}; background: ${p<0.05?'#fff0f0':'#f5f5f7'};"><div class="label" style="color: ${p<0.05?'#d32f2f':'var(--text-secondary)'};">P-Value</div><div class="value" style="color: ${p<0.05?'#d32f2f':'inherit'};">${p < 0.001 ? '<0.001' : p.toFixed(4)}</div></div>
                 </div>`;
             } else if(type === 'norm') {
-                // 常態性檢定 (Ryan-Joiner 逼近法)
                 let sorted = [...d1].sort(d3.ascending);
                 let zScores = [], num = 0, denZ = 0, denX = 0;
                 for(let i=0; i<n; i++) {
-                    let pi = (i + 1 - 0.375) / (n + 0.25); // Blom's 
+                    let pi = (i + 1 - 0.375) / (n + 0.25);
                     let zi = normInv(pi);
                     zScores.push({x: zi, y: sorted[i]});
                 }
@@ -306,20 +312,17 @@
                 zScores.forEach(d => { num += (d.x - mz)*(d.y - mx); denZ += Math.pow(d.x - mz, 2); denX += Math.pow(d.y - mx, 2); });
                 const r = num / Math.sqrt(denZ * denX);
                 const rSq = r * r;
-                
-                // Ryan-Joiner 臨界值逼近判斷 P-Value
                 let pValue = rSq > 0.95 ? "> 0.100" : (rSq < 0.90 ? "< 0.010" : "Approx ~ 0.05");
                 analysisState.data.qq = { pts: zScores, line: {b0: mx, b1: std(d1)} };
                 
                 html += `<div class="stat-row" style="margin-top: 16px;">
-                    <div class="stat-card" style="grid-column:span 2"><div class="label">Normality Test (Ryan-Joiner Approx) R-Sq</div><div class="value">${(rSq*100).toFixed(2)}%</div></div>
+                    <div class="stat-card" style="grid-column:span 2"><div class="label">Normality Test (Ryan-Joiner) R-Sq</div><div class="value">${(rSq*100).toFixed(2)}%</div></div>
                     <div class="stat-card" style="grid-column:span 2; border-color: ${rSq<0.95?'#ffcdd2':'var(--border)'}; background: ${rSq<0.95?'#fff0f0':'#f5f5f7'};"><div class="label" style="color: ${rSq<0.95?'#d32f2f':'var(--text-secondary)'};">P-Value Indicator</div><div class="value" style="color: ${rSq<0.95?'#d32f2f':'inherit'};">${pValue}</div></div>
                 </div>`;
             } else if (type === 'cpk' || type === 'spc') {
-                // 移動全距 (Moving Range)
                 let mr = []; for(let i=1; i<n; i++) mr.push(Math.abs(d1[i] - d1[i-1]));
                 const mrBar = mean(mr);
-                const sWithin = mrBar === 0 ? s : (mrBar / 1.128); // 避免 0
+                const sWithin = mrBar === 0 ? s : (mrBar / 1.128);
                 analysisState.data.qc = { m, s, sWithin, mrBar, d1 };
 
                 if(type === 'cpk') {
@@ -360,7 +363,6 @@
             if(v_1 === 0 && v_2 === 0) return alert("Both samples have zero variance.");
             analysisState.data[v1] = d1; analysisState.data[v2] = d2;
 
-            // Welch's t-test
             const t = (m1 - m2) / Math.sqrt(v_1/n1 + v_2/n2);
             const dfNum = Math.pow(v_1/n1 + v_2/n2, 2);
             const dfDen = Math.pow(v_1/n1, 2)/(n1-1) + Math.pow(v_2/n2, 2)/(n2-1);
@@ -400,14 +402,14 @@
             const MSB = SSB / dfB, MSW = SSW / dfW, F = MSB / MSW;
             const p = fCDF(F, dfB, dfW);
 
-            html = `<table class="anova-table">
+            html = `<div class="anova-table-container"><table class="anova-table">
                 <thead><tr><th>Source</th><th>DF</th><th>Adj SS</th><th>Adj MS</th><th>F-Value</th><th>P-Value</th></tr></thead>
                 <tbody>
                     <tr><td>Factor</td><td>${dfB}</td><td>${SSB.toFixed(3)}</td><td>${MSB.toFixed(3)}</td><td>${F.toFixed(2)}</td><td style="color:${p<0.05?'var(--danger)':''}">${p<0.001?'<0.001':p.toFixed(4)}</td></tr>
                     <tr><td>Error</td><td>${dfW}</td><td>${SSW.toFixed(3)}</td><td>${MSW.toFixed(3)}</td><td></td><td></td></tr>
                     <tr style="background: #fafafa;"><td>Total</td><td>${dfB+dfW}</td><td>${SST.toFixed(3)}</td><td></td><td></td><td></td></tr>
                 </tbody>
-            </table>`;
+            </table></div>`;
         }
         else if (type === 'reg') {
             const vx = document.getElementById('colX').value, vy = document.getElementById('colY').value;
@@ -432,18 +434,17 @@
         resArea.innerHTML = html; renderChart();
     }
 
-    // --- 4. D3.js 完美渲染 (支援 SVG 匯出) ---
+    // --- 4. D3.js 完美渲染 ---
     function renderChart() {
         const container = document.getElementById('chartArea'); container.innerHTML = '';
         const width = container.clientWidth, height = container.clientHeight;
-        const margin = { top: 30, right: 40, bottom: 40, left: 60 };
+        const margin = { top: 30, right: 30, bottom: 40, left: 50 };
         const innerWidth = width - margin.left - margin.right, innerHeight = height - margin.top - margin.bottom;
 
         const svg = d3.select(container).append("svg")
             .attr("viewBox", `0 0 ${width} ${height}`).attr("preserveAspectRatio", "xMidYMid meet")
             .attr("width", "100%").attr("height", "100%");
         
-        // 核心修正：將基礎樣式注入到 SVG 內，確保轉為 PNG 時樣式依然存在！
         svg.append("style").text(`
             .axis text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #86868b; }
             .axis path, .axis line { stroke: #d2d2d7; }
@@ -451,37 +452,33 @@
             .grid path { stroke-width: 0; }
         `);
 
-        // 背景白底 (Export PNG 必備)
         svg.append("rect").attr("width", "100%").attr("height", "100%").attr("fill", "white");
         const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
         const tooltip = d3.select("#tooltip");
 
         const renderAxes = (x, y) => {
-            g.append("g").attr("class", "grid").call(d3.axisBottom(x).tickSize(innerHeight).tickFormat(''));
-            g.append("g").attr("class", "grid").call(d3.axisLeft(y).tickSize(-innerWidth).tickFormat(''));
-            g.append("g").attr("class", "axis").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x));
-            g.append("g").attr("class", "axis").call(d3.axisLeft(y));
+            g.append("g").attr("class", "grid").call(d3.axisBottom(x).tickSize(innerHeight).tickFormat('')).style("stroke-dasharray", "4").style("stroke-opacity", "0.2");
+            g.append("g").attr("class", "grid").call(d3.axisLeft(y).tickSize(-innerWidth).tickFormat('')).style("stroke-dasharray", "4").style("stroke-opacity", "0.2");
+            g.append("g").attr("class", "axis").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x)).selectAll("text").style("font-family", "sans-serif").style("fill", "#86868b");
+            g.append("g").attr("class", "axis").call(d3.axisLeft(y)).selectAll("text").style("font-family", "sans-serif").style("fill", "#86868b");
         };
 
         if (currentChartType === 'scatter' && analysisState.type === 'reg') {
             const {pts, line, vx, vy} = analysisState.data;
             let xDom = d3.extent(pts, d=>d.x), yDom = d3.extent(pts, d=>d.y);
             const xPad = (xDom[1]-xDom[0])*0.05 || 1, yPad = (yDom[1]-yDom[0])*0.05 || 1;
-            
             const x = d3.scaleLinear().domain([xDom[0]-xPad, xDom[1]+xPad]).range([0, innerWidth]);
             const y = d3.scaleLinear().domain([yDom[0]-yPad, yDom[1]+yPad]).range([innerHeight, 0]);
             renderAxes(x, y);
             
             g.append("text").attr("x", innerWidth/2).attr("y", innerHeight + 35).style("text-anchor", "middle").style("font-size", "12px").style("font-weight", "600").style("fill", "#86868b").text(`X: ${vx}`);
-            g.append("text").attr("transform", "rotate(-90)").attr("y", -40).attr("x", -innerHeight/2).style("text-anchor", "middle").style("font-size", "12px").style("font-weight", "600").style("fill", "#86868b").text(`Y: ${vy}`);
+            g.append("text").attr("transform", "rotate(-90)").attr("y", -35).attr("x", -innerHeight/2).style("text-anchor", "middle").style("font-size", "12px").style("font-weight", "600").style("fill", "#86868b").text(`Y: ${vy}`);
 
             const xExt = x.domain();
             g.append("line").attr("x1", x(xExt[0])).attr("y1", y(line.b0 + line.b1*xExt[0])).attr("x2", x(xExt[1])).attr("y2", y(line.b0 + line.b1*xExt[1])).style("stroke", "#ff3b30").style("stroke-width", "2.5px").style("stroke-dasharray", "6 4");
 
-            g.selectAll("circle").data(pts).enter().append("circle")
-             .attr("cx", d=>x(d.x)).attr("cy", d=>y(d.y)).attr("r", 5).style("fill", "rgba(0, 113, 227, 0.7)").style("stroke", "#fff").style("stroke-width", "1.5px")
-             .on("mouseover", (e, d) => { tooltip.html(`<div class="tt-date">${vx}: ${d.x}</div><div class="tt-price">${vy}: ${d.y}</div>`).style("opacity", 1).style("left", (e.pageX + 10) + "px").style("top", (e.pageY - 10) + "px"); })
-             .on("mouseout", () => tooltip.style("opacity", 0));
+            g.selectAll("circle").data(pts).enter().append("circle").attr("cx", d=>x(d.x)).attr("cy", d=>y(d.y)).attr("r", 5).style("fill", "rgba(0, 113, 227, 0.7)").style("stroke", "#fff").style("stroke-width", "1.5px")
+             .on("mouseover", (e, d) => { tooltip.html(`<div class="tt-date">${vx}: ${d.x}</div><div class="tt-price">${vy}: ${d.y}</div>`).style("opacity", 1).style("left", (e.pageX + 10) + "px").style("top", (e.pageY - 10) + "px"); }).on("mouseout", () => tooltip.style("opacity", 0));
 
         } else if (currentChartType === 'qq' && analysisState.type === 'norm') {
             const {pts, line} = analysisState.data.qq;
@@ -490,12 +487,11 @@
             renderAxes(x, y);
 
             g.append("text").attr("x", innerWidth/2).attr("y", innerHeight + 35).style("text-anchor", "middle").style("font-size", "12px").style("fill", "#86868b").text("Theoretical Quantiles (Z)");
-            g.append("text").attr("transform", "rotate(-90)").attr("y", -40).attr("x", -innerHeight/2).style("text-anchor", "middle").style("font-size", "12px").style("fill", "#86868b").text("Data Value");
+            g.append("text").attr("transform", "rotate(-90)").attr("y", -35).attr("x", -innerHeight/2).style("text-anchor", "middle").style("font-size", "12px").style("fill", "#86868b").text("Data Value");
 
             g.append("line").attr("x1", x(-3)).attr("y1", y(line.b0 - 3*line.b1)).attr("x2", x(3)).attr("y2", y(line.b0 + 3*line.b1)).style("stroke", "#ff3b30").style("stroke-width", "2px").style("stroke-dasharray", "4");
             g.selectAll("circle").data(pts).enter().append("circle").attr("cx", d=>x(d.x)).attr("cy", d=>y(d.y)).attr("r", 5).style("fill", "rgba(0, 113, 227, 0.7)").style("stroke", "#fff")
-             .on("mouseover", (e, d) => { tooltip.html(`Z: ${d.x.toFixed(2)}<br>Value: ${d.y}`).style("opacity", 1).style("left", (e.pageX+10)+"px").style("top", (e.pageY-10)+"px"); })
-             .on("mouseout", () => tooltip.style("opacity", 0));
+             .on("mouseover", (e, d) => { tooltip.html(`Z: ${d.x.toFixed(2)}<br>Value: ${d.y}`).style("opacity", 1).style("left", (e.pageX+10)+"px").style("top", (e.pageY-10)+"px"); }).on("mouseout", () => tooltip.style("opacity", 0));
 
         } else if (currentChartType === 'cpk' && analysisState.type === 'cpk') {
             const qc = analysisState.data.qc;
@@ -525,7 +521,6 @@
             addLine(qc.lsl, "#ff3b30", "LSL"); addLine(qc.usl, "#ff3b30", "USL"); addLine(qc.m, "#34c759", "Mean");
 
         } else if (currentChartType === 'spc' && analysisState.type === 'spc') {
-            // 升級版 SPC: 支援拖曳縮放 (Zoom & Pan)
             const qc = analysisState.data.qc;
             const x0 = d3.scaleLinear().domain([0, qc.d1.length - 1]).range([0, innerWidth]);
             const yPad = (qc.ucl - qc.lcl) * 0.5;
@@ -535,7 +530,6 @@
             const gridX = g.append("g").attr("class", "grid").attr("transform", `translate(0,${innerHeight})`);
             g.append("g").attr("class", "grid").call(d3.axisLeft(y).tickSize(-innerWidth).tickFormat('')).style("stroke-dasharray", "4").style("stroke-opacity", "0.2");
             g.append("g").attr("class", "axis").call(d3.axisLeft(y)).selectAll("text").style("font-family", "sans-serif").style("fill", "#86868b");
-
             g.append("text").attr("x", innerWidth/2).attr("y", innerHeight + 35).style("text-anchor", "middle").style("font-size", "12px").style("fill", "#86868b").text("Observation Index");
             
             const drawCL = (val, color, text) => {
@@ -561,8 +555,6 @@
             svg.append("rect").attr("width", innerWidth).attr("height", innerHeight).attr("transform", `translate(${margin.left},${margin.top})`).style("fill", "none").style("pointer-events", "all").call(zoom);
 
             dots.on("mouseover", (e, d) => { tooltip.html(`Value: ${d}`).style("opacity", 1).style("left", (e.pageX+10)+"px").style("top", (e.pageY-10)+"px"); }).on("mouseout", () => tooltip.style("opacity", 0));
-            
-            // Initial call to trigger first render
             svg.select("rect").call(zoom.transform, d3.zoomIdentity);
 
         } else if (currentChartType === 'box') {
