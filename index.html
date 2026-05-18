@@ -77,17 +77,30 @@
         
         #tooltip { position: absolute; background: rgba(29, 29, 31, 0.85); backdrop-filter: blur(10px); color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 13px; pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.15); line-height: 1.4; }
 
-        @media (max-width: 800px) {
-            body { padding: max(env(safe-area-inset-top), 20px) max(env(safe-area-inset-right), 10px) max(env(safe-area-inset-bottom), 20px) max(env(safe-area-inset-left), 10px); }
-            .header h1 { font-size: 26px; }
-            .grid-layout { grid-template-columns: 1fr; gap: 16px; }
-            .panel { padding: 16px; }
-            .chart-container { height: 350px; }
-            .stat-row { grid-template-columns: repeat(2, 1fr); }
-            .segment-control { width: 100%; justify-content: center; }
-            .seg-btn { flex: 1; text-align: center; padding: 8px 4px; font-size: 12px; }
-            .chart-header-actions { flex-direction: column; align-items: stretch; }
-            .btn-export { justify-content: center; padding: 10px; font-size: 14px; }
+        /* ── 手機：視窗 ≤600px，單欄版 ── */
+        @media (max-width: 600px) {
+            body { padding: max(env(safe-area-inset-top), 16px) max(env(safe-area-inset-right), 12px) max(env(safe-area-inset-bottom), 24px) max(env(safe-area-inset-left), 12px); }
+            .header h1 { font-size: 22px; letter-spacing: -0.01em; }
+            .header p { font-size: 13px; }
+            .grid-layout { grid-template-columns: 1fr; gap: 12px; }
+            .panel { padding: 16px; border-radius: 14px; }
+            .panel h3 { font-size: 15px; }
+            .chart-container { height: 300px; border-radius: 10px; }
+            .stat-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .stat-card { padding: 10px; border-radius: 10px; }
+            .stat-card .value { font-size: 16px; }
+            .stat-card .label { font-size: 10px; }
+            .segment-control { width: 100%; justify-content: center; gap: 3px; }
+            .seg-btn { flex: 1; text-align: center; padding: 7px 4px; font-size: 11px; border-radius: 6px; }
+            .chart-header-actions { flex-direction: column; align-items: stretch; gap: 8px; }
+            .btn-export { justify-content: center; padding: 10px; font-size: 13px; border-radius: 8px; }
+            .btn-primary { font-size: 14px; padding: 11px; border-radius: 9px; }
+            .btn-success { margin-bottom: 14px; }
+            .spec-group { flex-direction: column; gap: 8px; }
+            textarea { height: 130px; font-size: 12px; }
+            select, input[type="number"] { font-size: 13px; padding: 9px 10px; }
+            .anova-table { font-size: 11px; }
+            .anova-table th, .anova-table td { padding: 7px 6px; }
         }
     </style>
 </head>
@@ -512,18 +525,4 @@
 
     function exportReport() {
         const reportPanel = document.getElementById('reportPanel');
-        const actionsEl = document.querySelector('.chart-header-actions');
-        if(!reportPanel || Object.keys(analysisState).length===0) return alert("No analysis results to export.");
-        const originalDisplay=actionsEl.style.display, originalBoxShadow=reportPanel.style.boxShadow, originalBorder=reportPanel.style.border;
-        actionsEl.style.display='none'; reportPanel.style.boxShadow='none'; reportPanel.style.border='none';
-        const typeSelect=document.getElementById('analysisType');
-        const reportTitle=document.createElement('h2');
-        reportTitle.id='pdfTitle'; reportTitle.innerText=`Statistical Analysis Report: ${typeSelect.options[typeSelect.selectedIndex].text}`;
-        reportTitle.style.textAlign='center'; reportTitle.style.marginBottom='20px'; reportTitle.style.color='#1d1d1f';
-        reportPanel.insertBefore(reportTitle, reportPanel.firstChild);
-        const opt={ margin:10, filename:`QA_Report_${Date.now()}.pdf`, image:{type:'jpeg',quality:1.0}, html2canvas:{scale:2,useCORS:true,logging:false,windowWidth:1200}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}, pagebreak:{mode:['avoid-all','css','legacy']} };
-        html2pdf().set(opt).from(reportPanel).save().then(()=>{ actionsEl.style.display=originalDisplay; reportPanel.style.boxShadow=originalBoxShadow; reportPanel.style.border=originalBorder; const pt=document.getElementById('pdfTitle'); if(pt) pt.remove(); }).catch(err=>{ console.error("PDF Export Error: ",err); actionsEl.style.display=originalDisplay; reportPanel.style.boxShadow=originalBoxShadow; reportPanel.style.border=originalBorder; const pt=document.getElementById('pdfTitle'); if(pt) pt.remove(); alert("PDF generation failed. Please try again."); });
-    }
-</script>
-</body>
-</html>
+       
