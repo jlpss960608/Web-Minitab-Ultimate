@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-title" content="Minitab Ultimate">
     <meta name="theme-color" content="#f5f5f7">
     <link rel="apple-touch-icon" href="icon.png">
-    <title>Minitab Ultimate - QA/QC Engine</title>
+    <title>Minitab Ultimate</title>
     
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -620,55 +620,103 @@
         }
     }
 
-    // --- 5. 強固版 匯出 PDF 報告功能 (Export PDF Report) ---
-    function exportReport() {
-        const reportPanel = document.getElementById('reportPanel');
-        const actionsEl = document.querySelector('.chart-header-actions');
-        
-        if(!reportPanel || Object.keys(analysisState).length === 0) return alert("No analysis results to export.");
-
-        const originalDisplay = actionsEl.style.display;
-        const originalBoxShadow = reportPanel.style.boxShadow;
-        const originalBorder = reportPanel.style.border;
-        
-        // 隱藏干擾元素，確保 PDF 乾淨
-        actionsEl.style.display = 'none';
-        reportPanel.style.boxShadow = 'none';
-        reportPanel.style.border = 'none';
+    // --- 5. 修復版 匯出 PDF 報告功能：先將 SVG 轉為 PNG，避免行動裝置空白問題 ---
+    async function exportReport() {
+        if (Object.keys(analysisState).length === 0) return alert("No analysis results to export.");
 
         const typeSelect = document.getElementById('analysisType');
-        const reportTitle = document.createElement('h2');
-        reportTitle.id = 'pdfTitle';
-        reportTitle.innerText = `Statistical Analysis Report: ${typeSelect.options[typeSelect.selectedIndex].text}`;
-        reportTitle.style.textAlign = 'center';
-        reportTitle.style.marginBottom = '20px';
-        reportTitle.style.color = '#1d1d1f';
-        reportPanel.insertBefore(reportTitle, reportPanel.firstChild);
+        const analysisTitle = typeSelect.options[typeSelect.selectedIndex].text;
 
-        // 升級：強制 PDF 使用 1200px 寬度的桌機版面渲染，防斷頁處理
+        // 1. 擷取統計數字 HTML（stat cards / ANOVA table）
+        const statsHTML = document.getElementById('resultsArea').innerHTML;
+
+        // 2. 將 D3 SVG 轉為 PNG data URL（解決行動裝置 html2canvas 無法渲染 SVG 的問題）
+        let chartImgTag = '';
+        const svgEl = document.querySelector('#chartArea svg');
+        if (svgEl) {
+            try {
+                const svgData = new XMLSerializer().serializeToString(svgEl);
+                const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                const svgUrl = URL.createObjectURL(svgBlob);
+                await new Promise((resolve) => {
+                    const img = new Image();
+                    const canvas = document.createElement('canvas');
+                    const scale = 2;
+                    canvas.width  = svgEl.clientWidth  * scale || 800 * scale;
+                    canvas.height = svgEl.clientHeight * scale || 450 * scale;
+                    img.onload = () => {
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        chartImgTag = `<img src="${canvas.toDataURL('image/png')}" style="width:100%;border-radius:8px;border:1px solid #d2d2d7;margin-top:16px;">`;
+                        URL.revokeObjectURL(svgUrl);
+                        resolve();
+                    };
+                    img.onerror = () => { URL.revokeObjectURL(svgUrl); resolve(); };
+                    img.src = svgUrl;
+                });
+            } catch(e) { console.warn('SVG export failed:', e); }
+        }
+
+        // 3. 組合成獨立的 PDF 用 HTML，內嵌所有樣式，不依賴外部 DOM
+        const pdfContent = `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;color:#1d1d1f;padding:8px;">
+            <h2 style="text-align:center;font-size:18px;font-weight:700;margin-bottom:4px;">Statistical Analysis Report</h2>
+            <p style="text-align:center;color:#86868b;font-size:13px;margin-bottom:20px;">${analysisTitle} &nbsp;·&nbsp; ${new Date().toLocaleString()}</p>
+            <hr style="border:none;border-top:1px solid #d2d2d7;margin-bottom:20px;">
+
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;">📊 Analysis Results</h3>
+            <div style="
+                display:grid;
+                grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+                gap:10px;
+                margin-bottom:8px;
+            ">
+            ${(() => {
+                // 把 stat-card 的 CSS 內嵌進去，讓 html2canvas 能正確渲染
+                const tmp = document.createElement('div');
+                tmp.innerHTML = statsHTML;
+                tmp.querySelectorAll('.stat-card').forEach(card => {
+                    card.style.cssText += ';background:#f5f5f7;border-radius:10px;padding:12px;text-align:center;border:1px solid #d2d2d7;break-inside:avoid;';
+                });
+                tmp.querySelectorAll('.stat-card .label').forEach(el => {
+                    el.style.cssText += ';font-size:10px;color:#86868b;font-weight:700;text-transform:uppercase;display:block;';
+                });
+                tmp.querySelectorAll('.stat-card .value').forEach(el => {
+                    el.style.cssText += ';font-size:17px;font-weight:700;margin-top:6px;display:block;font-family:ui-monospace,monospace;';
+                });
+                tmp.querySelectorAll('.stat-row').forEach(row => {
+                    row.style.cssText += ';display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:10px;';
+                });
+                tmp.querySelectorAll('.anova-table').forEach(t => {
+                    t.style.cssText += ';width:100%;border-collapse:collapse;font-size:12px;';
+                });
+                tmp.querySelectorAll('.anova-table th').forEach(el => {
+                    el.style.cssText += ';background:#f5f5f7;padding:8px;border:1px solid #d2d2d7;font-weight:600;color:#86868b;';
+                });
+                tmp.querySelectorAll('.anova-table td').forEach(el => {
+                    el.style.cssText += ';padding:8px;border:1px solid #d2d2d7;';
+                });
+                return tmp.innerHTML;
+            })()}
+            </div>
+
+            ${chartImgTag ? `<h3 style="font-size:14px;font-weight:600;margin-top:20px;margin-bottom:8px;">📈 Chart</h3>${chartImgTag}` : ''}
+        </div>`;
+
+        // 4. 用 html2pdf 輸出，直接從組好的字串渲染，完全不依賴頁面上的 DOM 狀態
         const opt = {
-            margin:       10, 
-            filename:     `QA_Report_${Date.now()}.pdf`,
-            image:        { type: 'jpeg', quality: 1.0 },
-            html2canvas:  { scale: 2, useCORS: true, logging: false, windowWidth: 1200 }, 
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            margin:      10,
+            filename:    `QA_Report_${Date.now()}.pdf`,
+            image:       { type: 'png', quality: 1.0 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak:   { mode: ['avoid-all', 'css'] }
         };
 
-        // 加上 Promise Catch 防呆機制
-        html2pdf().set(opt).from(reportPanel).save().then(() => {
-            actionsEl.style.display = originalDisplay;
-            reportPanel.style.boxShadow = originalBoxShadow;
-            reportPanel.style.border = originalBorder;
-            const pt = document.getElementById('pdfTitle');
-            if(pt) pt.remove();
-        }).catch(err => {
-            console.error("PDF Export Error: ", err);
-            actionsEl.style.display = originalDisplay;
-            reportPanel.style.boxShadow = originalBoxShadow;
-            reportPanel.style.border = originalBorder;
-            const pt = document.getElementById('pdfTitle');
-            if(pt) pt.remove();
+        html2pdf().set(opt).from(pdfContent).save().catch(err => {
+            console.error("PDF Export Error:", err);
             alert("PDF generation failed. Please try again.");
         });
     }
