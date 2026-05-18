@@ -620,99 +620,130 @@
         }
     }
 
-    // --- 5. 修復版 匯出 PDF 報告功能：先將 SVG 轉為 PNG，避免行動裝置空白問題 ---
+    // --- 5. PDF 匯出：從 resultsArea DOM 讀取數值，SVG 精確轉 PNG，table 排版確保相容性 ---
     async function exportReport() {
         if (Object.keys(analysisState).length === 0) return alert("No analysis results to export.");
 
         const typeSelect = document.getElementById('analysisType');
         const analysisTitle = typeSelect.options[typeSelect.selectedIndex].text;
 
-        // 1. 擷取統計數字 HTML（stat cards / ANOVA table）
-        const statsHTML = document.getElementById('resultsArea').innerHTML;
+        // ── 1. 從 resultsArea 的 stat-card 和 anova-table 提取資料，組成 PDF 用 table ──
+        function buildStatsHTML() {
+            const area = document.getElementById('resultsArea');
 
-        // 2. 將 D3 SVG 轉為 PNG data URL（解決行動裝置 html2canvas 無法渲染 SVG 的問題）
+            // ANOVA table → 直接複製，inline 樣式
+            const anovaTable = area.querySelector('.anova-table');
+            if (anovaTable) {
+                let rows = '';
+                anovaTable.querySelectorAll('tr').forEach(tr => {
+                    const isHead = tr.closest('thead') !== null;
+                    const cells = Array.from(tr.querySelectorAll('th, td')).map(td => {
+                        const bg  = isHead ? 'background:#f5f5f7;font-weight:700;color:#86868b;' : '';
+                        const red = td.style.color.includes('var(--danger)') || td.style.color === 'red' ? 'color:#d32f2f;' : '';
+                        return `<td style="padding:7px 10px;border:1px solid #d2d2d7;font-size:12px;${bg}${red}">${td.innerText}</td>`;
+                    }).join('');
+                    rows += `<tr>${cells}</tr>`;
+                });
+                return `<table style="border-collapse:collapse;width:100%;">${rows}</table>`;
+            }
+
+            // Stat cards → 每列最多 4 格，用 table 排版
+            const cards = Array.from(area.querySelectorAll('.stat-card'));
+            if (cards.length === 0) {
+                return `<p style="font-size:12px;color:#86868b;">${area.innerText}</p>`;
+            }
+
+            const cols = Math.min(cards.length, 4);
+            let rows = '', rowCells = '';
+            cards.forEach((card, i) => {
+                const label = card.querySelector('.label')?.innerText || '';
+                const valEl = card.querySelector('.value');
+                const val   = valEl?.innerText || '';
+                const color = valEl?.style.color || '#1d1d1f';
+                const isHighlight = color.includes('0071e3') || color.includes('rgb(0, 113, 227)');
+                rowCells += `<td style="padding:0 8px 10px 0;vertical-align:top;width:${Math.floor(100/cols)}%;">
+                    <div style="background:#f5f5f7;border:1px solid ${isHighlight?'#0071e3':'#d2d2d7'};border-radius:10px;padding:10px 12px;text-align:center;">
+                        <div style="font-size:9px;color:#86868b;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;line-height:1.4;">${label}</div>
+                        <div style="font-size:15px;font-weight:700;color:${isHighlight?'#0071e3':'#1d1d1f'};font-family:'Courier New',monospace;margin-top:4px;">${val}</div>
+                    </div>
+                </td>`;
+                if ((i + 1) % cols === 0 || i === cards.length - 1) {
+                    // 補空格讓最後一列對齊
+                    const rem = cols - ((i % cols) + 1);
+                    for (let r = 0; r < rem; r++) rowCells += `<td style="padding:0 8px 10px 0;width:${Math.floor(100/cols)}%;"></td>`;
+                    rows += `<tr>${rowCells}</tr>`;
+                    rowCells = '';
+                }
+            });
+            return `<table style="border-collapse:collapse;width:100%;table-layout:fixed;">${rows}</table>`;
+        }
+
+        // ── 2. SVG → PNG：getBoundingClientRect 取精確尺寸，scale=3 高清 ──
         let chartImgTag = '';
         const svgEl = document.querySelector('#chartArea svg');
         if (svgEl) {
             try {
+                const rect = svgEl.getBoundingClientRect();
+                const svgW = Math.round(rect.width)  || svgEl.viewBox.baseVal.width  || 600;
+                const svgH = Math.round(rect.height) || svgEl.viewBox.baseVal.height || 350;
+
+                // 暫時設定明確尺寸，讓 XMLSerializer 序列化時帶入正確的 width/height
+                const origW = svgEl.getAttribute('width');
+                const origH = svgEl.getAttribute('height');
+                svgEl.setAttribute('width',  svgW);
+                svgEl.setAttribute('height', svgH);
+
                 const svgData = new XMLSerializer().serializeToString(svgEl);
+
+                // 還原原始屬性，不改動頁面 SVG
+                if (origW === null) svgEl.removeAttribute('width');
+                else svgEl.setAttribute('width', origW);
+                if (origH === null) svgEl.removeAttribute('height');
+                else svgEl.setAttribute('height', origH);
+
                 const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-                const svgUrl = URL.createObjectURL(svgBlob);
+                const svgUrl  = URL.createObjectURL(svgBlob);
+                const scale   = 3;
+
                 await new Promise((resolve) => {
-                    const img = new Image();
+                    const img    = new Image();
                     const canvas = document.createElement('canvas');
-                    const scale = 2;
-                    canvas.width  = svgEl.clientWidth  * scale || 800 * scale;
-                    canvas.height = svgEl.clientHeight * scale || 450 * scale;
+                    canvas.width  = svgW * scale;
+                    canvas.height = svgH * scale;
                     img.onload = () => {
                         const ctx = canvas.getContext('2d');
                         ctx.fillStyle = '#ffffff';
                         ctx.fillRect(0, 0, canvas.width, canvas.height);
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        chartImgTag = `<img src="${canvas.toDataURL('image/png')}" style="width:100%;border-radius:8px;border:1px solid #d2d2d7;margin-top:16px;">`;
+                        chartImgTag = `<img src="${canvas.toDataURL('image/png')}" style="width:100%;height:auto;display:block;border-radius:8px;border:1px solid #d2d2d7;">`;
                         URL.revokeObjectURL(svgUrl);
                         resolve();
                     };
                     img.onerror = () => { URL.revokeObjectURL(svgUrl); resolve(); };
                     img.src = svgUrl;
                 });
-            } catch(e) { console.warn('SVG export failed:', e); }
+            } catch(e) { console.warn('SVG→PNG failed:', e); }
         }
 
-        // 3. 組合成獨立的 PDF 用 HTML，內嵌所有樣式，不依賴外部 DOM
-        const pdfContent = `
-        <div style="font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;color:#1d1d1f;padding:8px;">
-            <h2 style="text-align:center;font-size:18px;font-weight:700;margin-bottom:4px;">Statistical Analysis Report</h2>
-            <p style="text-align:center;color:#86868b;font-size:13px;margin-bottom:20px;">${analysisTitle} &nbsp;·&nbsp; ${new Date().toLocaleString()}</p>
-            <hr style="border:none;border-top:1px solid #d2d2d7;margin-bottom:20px;">
-
-            <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;">📊 Analysis Results</h3>
-            <div style="
-                display:grid;
-                grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-                gap:10px;
-                margin-bottom:8px;
-            ">
-            ${(() => {
-                // 把 stat-card 的 CSS 內嵌進去，讓 html2canvas 能正確渲染
-                const tmp = document.createElement('div');
-                tmp.innerHTML = statsHTML;
-                tmp.querySelectorAll('.stat-card').forEach(card => {
-                    card.style.cssText += ';background:#f5f5f7;border-radius:10px;padding:12px;text-align:center;border:1px solid #d2d2d7;break-inside:avoid;';
-                });
-                tmp.querySelectorAll('.stat-card .label').forEach(el => {
-                    el.style.cssText += ';font-size:10px;color:#86868b;font-weight:700;text-transform:uppercase;display:block;';
-                });
-                tmp.querySelectorAll('.stat-card .value').forEach(el => {
-                    el.style.cssText += ';font-size:17px;font-weight:700;margin-top:6px;display:block;font-family:ui-monospace,monospace;';
-                });
-                tmp.querySelectorAll('.stat-row').forEach(row => {
-                    row.style.cssText += ';display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:10px;';
-                });
-                tmp.querySelectorAll('.anova-table').forEach(t => {
-                    t.style.cssText += ';width:100%;border-collapse:collapse;font-size:12px;';
-                });
-                tmp.querySelectorAll('.anova-table th').forEach(el => {
-                    el.style.cssText += ';background:#f5f5f7;padding:8px;border:1px solid #d2d2d7;font-weight:600;color:#86868b;';
-                });
-                tmp.querySelectorAll('.anova-table td').forEach(el => {
-                    el.style.cssText += ';padding:8px;border:1px solid #d2d2d7;';
-                });
-                return tmp.innerHTML;
-            })()}
-            </div>
-
-            ${chartImgTag ? `<h3 style="font-size:14px;font-weight:600;margin-top:20px;margin-bottom:8px;">📈 Chart</h3>${chartImgTag}` : ''}
+        // ── 3. 組合 PDF HTML ──
+        const statsHTML = buildStatsHTML();
+        const pdfContent = `<div style="font-family:'Helvetica Neue',Arial,sans-serif;color:#1d1d1f;padding:4px;width:100%;box-sizing:border-box;">
+            <h2 style="text-align:center;font-size:17px;font-weight:700;margin:0 0 4px;">Statistical Analysis Report</h2>
+            <p style="text-align:center;color:#86868b;font-size:11px;margin:0 0 14px;">${analysisTitle} &nbsp;·&nbsp; ${new Date().toLocaleString()}</p>
+            <hr style="border:none;border-top:1px solid #d2d2d7;margin:0 0 16px;">
+            <p style="font-size:12px;font-weight:600;margin:0 0 10px;color:#1d1d1f;">Analysis Results</p>
+            ${statsHTML}
+            ${chartImgTag ? `<div style="margin-top:20px;"><p style="font-size:12px;font-weight:600;margin:0 0 8px;color:#1d1d1f;">Chart</p>${chartImgTag}</div>` : ''}
         </div>`;
 
-        // 4. 用 html2pdf 輸出，直接從組好的字串渲染，完全不依賴頁面上的 DOM 狀態
+        // ── 4. html2pdf 輸出 ──
         const opt = {
-            margin:      10,
+            margin:      [10, 10, 10, 10],
             filename:    `QA_Report_${Date.now()}.pdf`,
             image:       { type: 'png', quality: 1.0 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
+            html2canvas: { scale: 2, useCORS: true, logging: false, allowTaint: true },
             jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak:   { mode: ['avoid-all', 'css'] }
+            pagebreak:   { mode: 'avoid-all' }
         };
 
         html2pdf().set(opt).from(pdfContent).save().catch(err => {
