@@ -2,11 +2,15 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Web Minitab Ultimate</title>
-    <link rel="icon" type="image/png" href="icon.png">
-    <link rel="apple-touch-icon" href="icon.png">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="QA Engine">
+    <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1d1d1f" media="(prefers-color-scheme: dark)">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj4KICA8cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMDA3MWUzIi8+CiAgPHJlY3QgeD0iMjQiIHk9IjEwMCIgd2lkdGg9IjE4IiBoZWlnaHQ9IjU2IiByeD0iNCIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuOSIvPgogIDxyZWN0IHg9IjUyIiB5PSI3MiIgd2lkdGg9IjE4IiBoZWlnaHQ9Ijg0IiByeD0iNCIgZmlsbD0id2hpdGUiLz4KICA8cmVjdCB4PSI4MCIgeT0iNTIiIHdpZHRoPSIxOCIgaGVpZ2h0PSIxMDQiIHJ4PSI0IiBmaWxsPSJ3aGl0ZSIvPgogIDxyZWN0IHg9IjEwOCIgeT0iNjgiIHdpZHRoPSIxOCIgaGVpZ2h0PSI4OCIgcng9IjQiIGZpbGw9IndoaXRlIi8+CiAgPHJlY3QgeD0iMTM2IiB5PSI4OCIgd2lkdGg9IjE4IiBoZWlnaHQ9IjY4IiByeD0iNCIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuOSIvPgogIDxsaW5lIHgxPSIyNCIgeTE9Ijk1IiB4Mj0iMTU2IiB5Mj0iOTUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtZGFzaGFycmF5PSI1IDMiIG9wYWNpdHk9IjAuNSIvPgo8L3N2Zz4=">
+    <title>Web Minitab Ultimate - QA/QC Engine</title>
+
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
@@ -19,7 +23,7 @@
             --success: #34c759; --danger: #ff3b30; --warning: #ff9500;
         }
 
-        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; background: var(--bg-color); color: var(--text-primary); margin: 0; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; background: var(--bg-color); color: var(--text-primary); margin: 0; padding: max(env(safe-area-inset-top), 40px) max(env(safe-area-inset-right), 20px) max(env(safe-area-inset-bottom), 40px) max(env(safe-area-inset-left), 20px); display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 1300px; display: flex; flex-direction: column; gap: 24px; }
         
         .header { text-align: center; margin-bottom: 8px; }
@@ -30,7 +34,6 @@
         .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-large); padding: 24px; box-shadow: var(--card-shadow); transition: all 0.2s;}
         .panel h3 { margin-top: 0; font-size: 17px; font-weight: 600; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
 
-        /* Data Handler Inputs */
         textarea { width: 100%; height: 160px; border: 1px solid var(--border); border-radius: var(--radius-medium); padding: 14px; font-family: ui-monospace, monospace; font-size: 13px; line-height: 1.5; resize: vertical; box-sizing: border-box; background: #fafafa; margin-bottom: 16px; white-space: pre; transition: all 0.2s; }
         textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15); background: #fff; }
 
@@ -48,11 +51,9 @@
         .btn-success { background-color: var(--success); margin-bottom: 20px; margin-top: 0;}
         .btn-success:hover { background-color: #2eb24f; }
         
-        /* Export Button */
         .btn-export { background: #e5e5ea; color: #1d1d1f; border: none; padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px;}
         .btn-export:hover { background: #d2d2d7; }
 
-        /* Results Area & PDF Avoid Page Break */
         .results-section { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; break-inside: avoid; page-break-inside: avoid; }
         .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; break-inside: avoid; page-break-inside: avoid; }
         .stat-card { background: #f5f5f7; border-radius: 12px; padding: 14px; text-align: center; border: 1px solid var(--border); transition: 0.2s; break-inside: avoid; page-break-inside: avoid; }
@@ -60,14 +61,12 @@
         .stat-card .label { font-size: 11px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
         .stat-card .value { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-top: 8px; font-family: ui-monospace, monospace; }
 
-        /* ANOVA Table Style */
         .anova-table-container { width: 100%; overflow-x: auto; break-inside: avoid; page-break-inside: avoid; }
         .anova-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: right; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02);}
         .anova-table th { background: #f5f5f7; padding: 10px; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; }
         .anova-table td { padding: 10px; border-bottom: 1px solid var(--border); color: var(--text-primary); font-family: ui-monospace, monospace;}
         .anova-table th:first-child, .anova-table td:first-child { text-align: left; font-weight: 600; font-family: -apple-system, sans-serif;}
 
-        /* Charts Controls */
         .chart-header-actions { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
         .segment-control { display: flex; background: #eef0f4; padding: 4px; border-radius: 10px; width: fit-content; gap: 4px; flex-wrap: wrap; }
         .seg-btn { background: transparent; border: none; padding: 6px 16px; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; color: var(--text-secondary); transition: 0.2s; }
@@ -75,12 +74,10 @@
 
         .chart-container { position: relative; width: 100%; height: 450px; background: #fff; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; break-inside: avoid; page-break-inside: avoid; }
         
-        /* Tooltip */
         #tooltip { position: absolute; background: rgba(29, 29, 31, 0.85); backdrop-filter: blur(10px); color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 13px; pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.15); line-height: 1.4; }
 
-        /* 行動裝置響應式設計 (RWD) */
         @media (max-width: 800px) {
-            body { padding: 20px 10px; }
+            body { padding: max(env(safe-area-inset-top), 20px) max(env(safe-area-inset-right), 10px) max(env(safe-area-inset-bottom), 20px) max(env(safe-area-inset-left), 10px); }
             .header h1 { font-size: 26px; }
             .grid-layout { grid-template-columns: 1fr; gap: 16px; }
             .panel { padding: 16px; }
@@ -98,7 +95,7 @@
 <div class="container">
     <div class="header">
         <h1>Web Minitab Ultimate</h1>
-        <p>Quality Control & Inferential Statistics Engine</p>
+        <p>Quality Control &amp; Inferential Statistics Engine</p>
     </div>
 
     <div class="grid-layout">
@@ -106,7 +103,7 @@
             <h3 style="margin-bottom: 12px;">📊 Data Source <span id="parseStatus" style="font-size: 12px; color: var(--success); font-weight: 500; display: none;">✓ Loaded</span></h3>
             <input type="file" id="fileUpload" accept=".csv, .txt, .tsv">
             <textarea id="dataInput" placeholder="Paste your Excel/CSV data here..."></textarea>
-            <button class="btn-primary btn-success" id="btnLoad" onclick="parseData()">Parse & Load Data</button>
+            <button class="btn-primary btn-success" id="btnLoad" onclick="parseData()">Parse &amp; Load Data</button>
 
             <h3>⚙️ Analysis Setup</h3>
             <div class="control-group">
@@ -188,7 +185,6 @@
         const delimiter = lines[0].includes('\t') ? '\t' : (lines[0].includes(',') ? ',' : /\s+/);
         headers = lines[0].split(delimiter).map(h => h.trim());
         dataset = {}; headers.forEach(h => dataset[h] = []);
-
         for (let i = 1; i < lines.length; i++) {
             const values = lines[i].split(delimiter);
             headers.forEach((h, idx) => {
@@ -196,7 +192,7 @@
                 dataset[h].push(isNaN(val) ? null : val);
             });
         }
-        headers = headers.filter(h => dataset[h].some(val => val !== null)); 
+        headers = headers.filter(h => dataset[h].some(val => val !== null));
         if(headers.length > 0) {
             document.getElementById('parseStatus').style.display = 'inline';
             setTimeout(() => document.getElementById('parseStatus').style.display = 'none', 3000);
@@ -209,10 +205,9 @@
         const container = document.getElementById('dynamicControls');
         container.innerHTML = '';
         let html = '';
-
         if (['desc', '1samp', 'norm', 'spc'].includes(type)) {
             html += `<div class="control-group"><label>Variable:</label><select id="col1">${getOptionsHTML(1)}</select></div>`;
-            if(type === '1samp') html += `<div class="control-group"><label>Test Mean (H₀ : μ):</label><input type="number" id="testMu" value="13.0" step="any"></div>`;
+            if(type === '1samp') html += `<div class="control-group"><label>Test Mean (H&#8320; : &#956;):</label><input type="number" id="testMu" value="13.0" step="any"></div>`;
         } else if (type === 'cpk') {
             html += `<div class="control-group"><label>Variable:</label><select id="col1">${getOptionsHTML(1)}</select></div>`;
             html += `<div class="spec-group">
@@ -230,12 +225,10 @@
             html += `<div class="control-group"><label>Response (Y):</label><select id="colY">${getOptionsHTML(2)}</select></div>`;
         }
         container.innerHTML = html;
-        
         document.getElementById('chartControls').style.display = 'flex';
         document.getElementById('btnExport').style.display = 'flex';
         const btns = ['Hist', 'Box', 'Scatter', 'QQ', 'SPC', 'Cpk'];
         btns.forEach(b => document.getElementById(`btn${b}`).style.display = 'none');
-
         if (type === 'reg') { document.getElementById('btnScatter').style.display = 'block'; setChartType('scatter'); }
         else if (type === 'norm') { document.getElementById('btnQQ').style.display = 'block'; setChartType('qq'); }
         else if (type === 'spc') { document.getElementById('btnSPC').style.display = 'block'; setChartType('spc'); }
@@ -288,59 +281,44 @@
             const m = mean(d1), s = std(d1), n = d1.length;
             if(n < 2) return alert("Not enough valid data.");
             if(s === 0) return alert("Data has zero variance (all values are identical). Cannot perform statistical testing.");
-            
             analysisState.data[v1] = d1;
-            
             html = `<div class="stat-row">
                 <div class="stat-card"><div class="label">Variable</div><div class="value">${v1}</div></div>
                 <div class="stat-card"><div class="label">N</div><div class="value">${n}</div></div>
                 <div class="stat-card"><div class="label">Mean</div><div class="value">${m.toFixed(4)}</div></div>
                 <div class="stat-card"><div class="label">StDev (Overall)</div><div class="value">${s.toFixed(4)}</div></div>
             </div>`;
-
             if(type === '1samp') {
                 const mu = parseFloat(document.getElementById('testMu').value);
                 const t = (m - mu) / (s / Math.sqrt(n));
                 const p = tCDF(t, n - 1);
                 html += `<div class="stat-row" style="margin-top: 16px;">
-                    <div class="stat-card"><div class="label">Target μ</div><div class="value">${mu}</div></div>
+                    <div class="stat-card"><div class="label">Target &#956;</div><div class="value">${mu}</div></div>
                     <div class="stat-card"><div class="label">T-Value</div><div class="value">${t.toFixed(2)}</div></div>
                     <div class="stat-card" style="border-color: ${p<0.05?'#ffcdd2':'var(--border)'}; background: ${p<0.05?'#fff0f0':'#f5f5f7'};"><div class="label" style="color: ${p<0.05?'#d32f2f':'var(--text-secondary)'};">P-Value</div><div class="value" style="color: ${p<0.05?'#d32f2f':'inherit'};">${p < 0.001 ? '<0.001' : p.toFixed(4)}</div></div>
                 </div>`;
             } else if(type === 'norm') {
                 let sorted = [...d1].sort(d3.ascending);
                 let zScores = [], num = 0, denZ = 0, denX = 0;
-                for(let i=0; i<n; i++) {
-                    let pi = (i + 1 - 0.375) / (n + 0.25);
-                    let zi = normInv(pi);
-                    zScores.push({x: zi, y: sorted[i]});
-                }
+                for(let i=0; i<n; i++) { let pi = (i + 1 - 0.375) / (n + 0.25); let zi = normInv(pi); zScores.push({x: zi, y: sorted[i]}); }
                 const mz = mean(zScores.map(d=>d.x)), mx = m;
                 zScores.forEach(d => { num += (d.x - mz)*(d.y - mx); denZ += Math.pow(d.x - mz, 2); denX += Math.pow(d.y - mx, 2); });
-                const r = num / Math.sqrt(denZ * denX);
-                const rSq = r * r;
+                const r = num / Math.sqrt(denZ * denX), rSq = r * r;
                 let pValue = rSq > 0.95 ? "> 0.100" : (rSq < 0.90 ? "< 0.010" : "Approx ~ 0.05");
                 analysisState.data.qq = { pts: zScores, line: {b0: mx, b1: std(d1)} };
-                
                 html += `<div class="stat-row" style="margin-top: 16px;">
                     <div class="stat-card" style="grid-column:span 2"><div class="label">Normality Test (Ryan-Joiner) R-Sq</div><div class="value">${(rSq*100).toFixed(2)}%</div></div>
                     <div class="stat-card" style="grid-column:span 2; border-color: ${rSq<0.95?'#ffcdd2':'var(--border)'}; background: ${rSq<0.95?'#fff0f0':'#f5f5f7'};"><div class="label" style="color: ${rSq<0.95?'#d32f2f':'var(--text-secondary)'};">P-Value Indicator</div><div class="value" style="color: ${rSq<0.95?'#d32f2f':'inherit'};">${pValue}</div></div>
                 </div>`;
             } else if (type === 'cpk' || type === 'spc') {
                 let mr = []; for(let i=1; i<n; i++) mr.push(Math.abs(d1[i] - d1[i-1]));
-                const mrBar = mean(mr);
-                const sWithin = mrBar === 0 ? s : (mrBar / 1.128);
+                const mrBar = mean(mr), sWithin = mrBar === 0 ? s : (mrBar / 1.128);
                 analysisState.data.qc = { m, s, sWithin, mrBar, d1 };
-
                 if(type === 'cpk') {
-                    const usl = parseFloat(document.getElementById('usl').value);
-                    const lsl = parseFloat(document.getElementById('lsl').value);
-                    const cp = (usl - lsl) / (6 * sWithin);
-                    const cpk = Math.min((usl - m)/(3*sWithin), (m - lsl)/(3*sWithin));
-                    const pp = (usl - lsl) / (6 * s);
-                    const ppk = Math.min((usl - m)/(3*s), (m - lsl)/(3*s));
+                    const usl = parseFloat(document.getElementById('usl').value), lsl = parseFloat(document.getElementById('lsl').value);
+                    const cp = (usl - lsl) / (6 * sWithin), cpk = Math.min((usl - m)/(3*sWithin), (m - lsl)/(3*sWithin));
+                    const pp = (usl - lsl) / (6 * s), ppk = Math.min((usl - m)/(3*s), (m - lsl)/(3*s));
                     analysisState.data.qc.usl = usl; analysisState.data.qc.lsl = lsl;
-
                     html += `<div class="stat-row" style="margin-top: 16px;">
                         <div class="stat-card" style="background: #e8f4fd; border-color: #0071e3;"><div class="label" style="color: #0071e3;">Cpk (Within)</div><div class="value" style="color: #0071e3;">${cpk.toFixed(2)}</div></div>
                         <div class="stat-card"><div class="label">Cp</div><div class="value">${cp.toFixed(2)}</div></div>
@@ -348,10 +326,8 @@
                         <div class="stat-card"><div class="label">StDev (Within)</div><div class="value">${sWithin.toFixed(4)}</div></div>
                     </div>`;
                 } else if (type === 'spc') {
-                    const ucl = m + 2.66 * mrBar;
-                    const lcl = m - 2.66 * mrBar;
+                    const ucl = m + 2.66 * mrBar, lcl = m - 2.66 * mrBar;
                     analysisState.data.qc.ucl = ucl; analysisState.data.qc.lcl = lcl;
-                    
                     html += `<div class="stat-row" style="margin-top: 16px;">
                         <div class="stat-card"><div class="label">I-Chart UCL</div><div class="value" style="color: var(--danger);">${ucl.toFixed(3)}</div></div>
                         <div class="stat-card"><div class="label">Center Line (Mean)</div><div class="value" style="color: var(--success);">${m.toFixed(3)}</div></div>
@@ -359,23 +335,17 @@
                     </div>`;
                 }
             }
-        } 
-        else if (type === '2samp') {
+        } else if (type === '2samp') {
             const v1 = document.getElementById('col1').value, v2 = document.getElementById('col2').value;
             const d1 = clean(dataset[v1]), d2 = clean(dataset[v2]);
             if(d1.length < 2 || d2.length < 2) return alert("Not enough valid data.");
-            
             const m1 = mean(d1), v_1 = variance(d1), n1 = d1.length;
             const m2 = mean(d2), v_2 = variance(d2), n2 = d2.length;
             if(v_1 === 0 && v_2 === 0) return alert("Both samples have zero variance.");
             analysisState.data[v1] = d1; analysisState.data[v2] = d2;
-
             const t = (m1 - m2) / Math.sqrt(v_1/n1 + v_2/n2);
-            const dfNum = Math.pow(v_1/n1 + v_2/n2, 2);
-            const dfDen = Math.pow(v_1/n1, 2)/(n1-1) + Math.pow(v_2/n2, 2)/(n2-1);
-            const df = dfNum / dfDen;
-            const p = tCDF(t, df);
-            
+            const dfNum = Math.pow(v_1/n1 + v_2/n2, 2), dfDen = Math.pow(v_1/n1, 2)/(n1-1) + Math.pow(v_2/n2, 2)/(n2-1);
+            const df = dfNum / dfDen, p = tCDF(t, df);
             html = `<div class="stat-row">
                 <div class="stat-card"><div class="label">Mean (${v1})</div><div class="value">${m1.toFixed(3)}</div></div>
                 <div class="stat-card"><div class="label">Mean (${v2})</div><div class="value">${m2.toFixed(3)}</div></div>
@@ -386,29 +356,18 @@
                 <div class="stat-card"><div class="label">DF</div><div class="value">${Math.round(df)}</div></div>
                 <div class="stat-card" style="border-color: ${p<0.05?'#ffcdd2':'var(--border)'}; background: ${p<0.05?'#fff0f0':'#f5f5f7'};"><div class="label" style="color: ${p<0.05?'#d32f2f':'var(--text-secondary)'};">P-Value</div><div class="value" style="color: ${p<0.05?'#d32f2f':'inherit'};">${p < 0.001 ? '<0.001' : p.toFixed(4)}</div></div>
             </div>`;
-        }
-        else if (type === 'anova') {
+        } else if (type === 'anova') {
             const select = document.getElementById('colMulti');
             const selected = Array.from(select.selectedOptions).map(opt => opt.value);
             if(selected.length < 2) return alert("Select at least 2 groups for ANOVA");
-            
-            let allData = [], k = selected.length, nTotal = 0, sumTotal = 0, sqSumTotal = 0;
-            
-            selected.forEach(v => {
-                const d = clean(dataset[v]); analysisState.data[v] = d;
-                nTotal += d.length;
-                d.forEach(val => { allData.push(val); sumTotal += val; sqSumTotal += val*val; });
-            });
-            
+            let k = selected.length, nTotal = 0, sumTotal = 0, sqSumTotal = 0;
+            selected.forEach(v => { const d = clean(dataset[v]); analysisState.data[v] = d; nTotal += d.length; d.forEach(val => { sumTotal += val; sqSumTotal += val*val; }); });
             if(nTotal <= k) return alert("Not enough data degrees of freedom.");
             const SST = sqSumTotal - (sumTotal*sumTotal)/nTotal;
             let SSW = 0;
             selected.forEach(v => { const d = analysisState.data[v]; const m = mean(d); d.forEach(val => { SSW += Math.pow(val - m, 2); }); });
-            
             const SSB = SST - SSW, dfB = k - 1, dfW = nTotal - k;
-            const MSB = SSB / dfB, MSW = SSW / dfW, F = MSB / MSW;
-            const p = fCDF(F, dfB, dfW);
-
+            const MSB = SSB / dfB, MSW = SSW / dfW, F = MSB / MSW, p = fCDF(F, dfB, dfW);
             html = `<div class="anova-table-container"><table class="anova-table">
                 <thead><tr><th>Source</th><th>DF</th><th>Adj SS</th><th>Adj MS</th><th>F-Value</th><th>P-Value</th></tr></thead>
                 <tbody>
@@ -417,257 +376,152 @@
                     <tr style="background: #fafafa;"><td>Total</td><td>${dfB+dfW}</td><td>${SST.toFixed(3)}</td><td></td><td></td><td></td></tr>
                 </tbody>
             </table></div>`;
-        }
-        else if (type === 'reg') {
+        } else if (type === 'reg') {
             const vx = document.getElementById('colX').value, vy = document.getElementById('colY').value;
             let pts = []; for(let i=0; i < dataset[vx].length; i++) if(dataset[vx][i] !== null && dataset[vy][i] !== null) pts.push({x: dataset[vx][i], y: dataset[vy][i]});
             if(pts.length < 3) return alert("Not enough paired data.");
-            
             const n = pts.length, mx = mean(pts.map(d=>d.x)), my = mean(pts.map(d=>d.y));
             let SSxy=0, SSxx=0, SSyy=0; pts.forEach(d => { SSxy += (d.x-mx)*(d.y-my); SSxx += Math.pow(d.x-mx, 2); SSyy += Math.pow(d.y-my, 2); });
-            
             if(SSxx === 0) return alert("Predictor (X) has zero variance.");
             const b1 = SSxy / SSxx, b0 = my - b1 * mx, SSR = b1 * SSxy, SST = SSyy, SSE = SST - SSR;
             const F = (SSR/1) / (SSE/(n-2)), p = fCDF(F, 1, n-2);
             analysisState.data = { pts, line: {b0, b1}, vx, vy };
-
             html = `<div class="stat-row" style="margin-bottom: 16px;">
                 <div class="stat-card" style="grid-column: span 2; background: #fff; border-color: var(--accent);"><div class="label" style="color: var(--accent);">Regression Equation</div><div class="value">${vy} = ${b0.toFixed(3)} ${b1>=0?'+':'-'} ${Math.abs(b1).toFixed(3)} ${vx}</div></div>
                 <div class="stat-card"><div class="label">R-Sq</div><div class="value">${((SSR/SST)*100).toFixed(1)}%</div></div>
                 <div class="stat-card"><div class="label">P-Value</div><div class="value" style="color:${p<0.05?'var(--danger)':'inherit'}">${p<0.001?'<0.001':p.toFixed(4)}</div></div>
             </div>`;
         }
-
         resArea.innerHTML = html; renderChart();
     }
 
-    // --- 4. D3.js 完美渲染 ---
     function renderChart() {
         const container = document.getElementById('chartArea'); container.innerHTML = '';
         const width = container.clientWidth, height = container.clientHeight;
         const margin = { top: 30, right: 30, bottom: 40, left: 50 };
         const innerWidth = width - margin.left - margin.right, innerHeight = height - margin.top - margin.bottom;
-
-        const svg = d3.select(container).append("svg")
-            .attr("viewBox", `0 0 ${width} ${height}`).attr("preserveAspectRatio", "xMidYMid meet")
-            .attr("width", "100%").attr("height", "100%");
-        
-        svg.append("style").text(`
-            .axis text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #86868b; }
-            .axis path, .axis line { stroke: #d2d2d7; }
-            .grid line { stroke: #e5e5ea; stroke-opacity: 0.7; stroke-dasharray: 4; }
-            .grid path { stroke-width: 0; }
-        `);
-
+        const svg = d3.select(container).append("svg").attr("viewBox", `0 0 ${width} ${height}`).attr("preserveAspectRatio", "xMidYMid meet").attr("width", "100%").attr("height", "100%");
+        svg.append("style").text(`.axis text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #86868b; } .axis path, .axis line { stroke: #d2d2d7; } .grid line { stroke: #e5e5ea; stroke-opacity: 0.7; stroke-dasharray: 4; } .grid path { stroke-width: 0; }`);
         svg.append("rect").attr("width", "100%").attr("height", "100%").attr("fill", "white");
         const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
         const tooltip = d3.select("#tooltip");
-
         const renderAxes = (x, y) => {
             g.append("g").attr("class", "grid").call(d3.axisBottom(x).tickSize(innerHeight).tickFormat('')).style("stroke-dasharray", "4").style("stroke-opacity", "0.2");
             g.append("g").attr("class", "grid").call(d3.axisLeft(y).tickSize(-innerWidth).tickFormat('')).style("stroke-dasharray", "4").style("stroke-opacity", "0.2");
             g.append("g").attr("class", "axis").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x)).selectAll("text").style("font-family", "sans-serif").style("fill", "#86868b");
             g.append("g").attr("class", "axis").call(d3.axisLeft(y)).selectAll("text").style("font-family", "sans-serif").style("fill", "#86868b");
         };
-
         if (currentChartType === 'scatter' && analysisState.type === 'reg') {
             const {pts, line, vx, vy} = analysisState.data;
             let xDom = d3.extent(pts, d=>d.x), yDom = d3.extent(pts, d=>d.y);
-            const xPad = (xDom[1]-xDom[0])*0.05 || 1, yPad = (yDom[1]-yDom[0])*0.05 || 1;
+            const xPad = (xDom[1]-xDom[0])*0.05||1, yPad = (yDom[1]-yDom[0])*0.05||1;
             const x = d3.scaleLinear().domain([xDom[0]-xPad, xDom[1]+xPad]).range([0, innerWidth]);
             const y = d3.scaleLinear().domain([yDom[0]-yPad, yDom[1]+yPad]).range([innerHeight, 0]);
             renderAxes(x, y);
-            
-            g.append("text").attr("x", innerWidth/2).attr("y", innerHeight + 35).style("text-anchor", "middle").style("font-size", "12px").style("font-weight", "600").style("fill", "#86868b").text(`X: ${vx}`);
-            g.append("text").attr("transform", "rotate(-90)").attr("y", -35).attr("x", -innerHeight/2).style("text-anchor", "middle").style("font-size", "12px").style("font-weight", "600").style("fill", "#86868b").text(`Y: ${vy}`);
-
+            g.append("text").attr("x", innerWidth/2).attr("y", innerHeight+35).style("text-anchor","middle").style("font-size","12px").style("font-weight","600").style("fill","#86868b").text(`X: ${vx}`);
+            g.append("text").attr("transform","rotate(-90)").attr("y",-35).attr("x",-innerHeight/2).style("text-anchor","middle").style("font-size","12px").style("font-weight","600").style("fill","#86868b").text(`Y: ${vy}`);
             const xExt = x.domain();
-            g.append("line").attr("x1", x(xExt[0])).attr("y1", y(line.b0 + line.b1*xExt[0])).attr("x2", x(xExt[1])).attr("y2", y(line.b0 + line.b1*xExt[1])).style("stroke", "#ff3b30").style("stroke-width", "2.5px").style("stroke-dasharray", "6 4");
-
-            g.selectAll("circle").data(pts).enter().append("circle").attr("cx", d=>x(d.x)).attr("cy", d=>y(d.y)).attr("r", 5).style("fill", "rgba(0, 113, 227, 0.7)").style("stroke", "#fff").style("stroke-width", "1.5px")
-             .on("mouseover", (e, d) => { tooltip.html(`<div class="tt-date">${vx}: ${d.x}</div><div class="tt-price">${vy}: ${d.y}</div>`).style("opacity", 1).style("left", (e.pageX + 10) + "px").style("top", (e.pageY - 10) + "px"); }).on("mouseout", () => tooltip.style("opacity", 0));
-
+            g.append("line").attr("x1",x(xExt[0])).attr("y1",y(line.b0+line.b1*xExt[0])).attr("x2",x(xExt[1])).attr("y2",y(line.b0+line.b1*xExt[1])).style("stroke","#ff3b30").style("stroke-width","2.5px").style("stroke-dasharray","6 4");
+            g.selectAll("circle").data(pts).enter().append("circle").attr("cx",d=>x(d.x)).attr("cy",d=>y(d.y)).attr("r",5).style("fill","rgba(0,113,227,0.7)").style("stroke","#fff").style("stroke-width","1.5px").on("mouseover",(e,d)=>{tooltip.html(`${vx}: ${d.x}<br>${vy}: ${d.y}`).style("opacity",1).style("left",(e.pageX+10)+"px").style("top",(e.pageY-10)+"px");}).on("mouseout",()=>tooltip.style("opacity",0));
         } else if (currentChartType === 'qq' && analysisState.type === 'norm') {
             const {pts, line} = analysisState.data.qq;
-            const x = d3.scaleLinear().domain([-3, 3]).range([0, innerWidth]);
-            const y = d3.scaleLinear().domain(d3.extent(pts, d=>d.y)).nice().range([innerHeight, 0]);
+            const x = d3.scaleLinear().domain([-3,3]).range([0,innerWidth]);
+            const y = d3.scaleLinear().domain(d3.extent(pts,d=>d.y)).nice().range([innerHeight,0]);
             renderAxes(x, y);
-
-            g.append("text").attr("x", innerWidth/2).attr("y", innerHeight + 35).style("text-anchor", "middle").style("font-size", "12px").style("fill", "#86868b").text("Theoretical Quantiles (Z)");
-            g.append("text").attr("transform", "rotate(-90)").attr("y", -35).attr("x", -innerHeight/2).style("text-anchor", "middle").style("font-size", "12px").style("fill", "#86868b").text("Data Value");
-
-            g.append("line").attr("x1", x(-3)).attr("y1", y(line.b0 - 3*line.b1)).attr("x2", x(3)).attr("y2", y(line.b0 + 3*line.b1)).style("stroke", "#ff3b30").style("stroke-width", "2px").style("stroke-dasharray", "4");
-            g.selectAll("circle").data(pts).enter().append("circle").attr("cx", d=>x(d.x)).attr("cy", d=>y(d.y)).attr("r", 5).style("fill", "rgba(0, 113, 227, 0.7)").style("stroke", "#fff")
-             .on("mouseover", (e, d) => { tooltip.html(`Z: ${d.x.toFixed(2)}<br>Value: ${d.y}`).style("opacity", 1).style("left", (e.pageX+10)+"px").style("top", (e.pageY-10)+"px"); }).on("mouseout", () => tooltip.style("opacity", 0));
-
+            g.append("text").attr("x",innerWidth/2).attr("y",innerHeight+35).style("text-anchor","middle").style("font-size","12px").style("fill","#86868b").text("Theoretical Quantiles (Z)");
+            g.append("text").attr("transform","rotate(-90)").attr("y",-35).attr("x",-innerHeight/2).style("text-anchor","middle").style("font-size","12px").style("fill","#86868b").text("Data Value");
+            g.append("line").attr("x1",x(-3)).attr("y1",y(line.b0-3*line.b1)).attr("x2",x(3)).attr("y2",y(line.b0+3*line.b1)).style("stroke","#ff3b30").style("stroke-width","2px").style("stroke-dasharray","4");
+            g.selectAll("circle").data(pts).enter().append("circle").attr("cx",d=>x(d.x)).attr("cy",d=>y(d.y)).attr("r",5).style("fill","rgba(0,113,227,0.7)").style("stroke","#fff").on("mouseover",(e,d)=>{tooltip.html(`Z: ${d.x.toFixed(2)}<br>Value: ${d.y}`).style("opacity",1).style("left",(e.pageX+10)+"px").style("top",(e.pageY-10)+"px");}).on("mouseout",()=>tooltip.style("opacity",0));
         } else if (currentChartType === 'cpk' && analysisState.type === 'cpk') {
             const qc = analysisState.data.qc;
             const xExt = d3.extent([...qc.d1, qc.lsl, qc.usl]);
-            const pad = (xExt[1]-xExt[0])*0.1 || 1;
-            const x = d3.scaleLinear().domain([xExt[0]-pad, xExt[1]+pad]).range([0, innerWidth]);
+            const pad = (xExt[1]-xExt[0])*0.1||1;
+            const x = d3.scaleLinear().domain([xExt[0]-pad, xExt[1]+pad]).range([0,innerWidth]);
             const hist = d3.bin().domain(x.domain()).thresholds(x.ticks(15))(qc.d1);
-            
             let curveData = [];
-            const step = (xExt[1]-xExt[0]+2*pad)/100;
-            const binW = hist[0] ? (hist[0].x1 - hist[0].x0) : 1;
-            const areaFactor = qc.d1.length * binW;
-            for(let i=xExt[0]-pad; i<=xExt[1]+pad; i+=step) curveData.push({x: i, y: normalPDF(i, qc.m, qc.sWithin) * areaFactor});
-
-            const yMax = Math.max(d3.max(hist, d=>d.length), d3.max(curveData, d=>d.y));
-            const y = d3.scaleLinear().domain([0, yMax*1.1]).range([innerHeight, 0]);
+            const step = (xExt[1]-xExt[0]+2*pad)/100, binW = hist[0]?(hist[0].x1-hist[0].x0):1, areaFactor = qc.d1.length*binW;
+            for(let i=xExt[0]-pad; i<=xExt[1]+pad; i+=step) curveData.push({x:i, y:normalPDF(i,qc.m,qc.sWithin)*areaFactor});
+            const yMax = Math.max(d3.max(hist,d=>d.length), d3.max(curveData,d=>d.y));
+            const y = d3.scaleLinear().domain([0,yMax*1.1]).range([innerHeight,0]);
             renderAxes(x, y);
-
-            g.selectAll("rect").data(hist).enter().append("rect").attr("x", d=>x(d.x0)+1).attr("y", d=>y(d.length)).attr("width", d=>Math.max(0, x(d.x1)-x(d.x0)-1)).attr("height", d=>innerHeight-y(d.length)).style("fill", "#0071e3").style("opacity", 0.6).style("stroke", "white");
-            const line = d3.line().x(d=>x(d.x)).y(d=>y(d.y)).curve(d3.curveBasis);
-            g.append("path").datum(curveData).attr("d", line).style("fill", "none").style("stroke", "#1d1d1f").style("stroke-width", "2px").style("stroke-dasharray", "4");
-
-            const addLine = (val, color, text) => {
-                g.append("line").attr("x1", x(val)).attr("x2", x(val)).attr("y1", 0).attr("y2", innerHeight).style("stroke", color).style("stroke-width", "2px").style("stroke-dasharray", "4");
-                g.append("text").attr("x", x(val)).attr("y", -10).style("text-anchor", "middle").style("font-size", "11px").style("font-weight", "bold").style("fill", color).text(text);
-            };
-            addLine(qc.lsl, "#ff3b30", "LSL"); addLine(qc.usl, "#ff3b30", "USL"); addLine(qc.m, "#34c759", "Mean");
-
+            g.selectAll("rect").data(hist).enter().append("rect").attr("x",d=>x(d.x0)+1).attr("y",d=>y(d.length)).attr("width",d=>Math.max(0,x(d.x1)-x(d.x0)-1)).attr("height",d=>innerHeight-y(d.length)).style("fill","#0071e3").style("opacity",0.6).style("stroke","white");
+            const lineGen = d3.line().x(d=>x(d.x)).y(d=>y(d.y)).curve(d3.curveBasis);
+            g.append("path").datum(curveData).attr("d",lineGen).style("fill","none").style("stroke","#1d1d1f").style("stroke-width","2px").style("stroke-dasharray","4");
+            const addLine = (val,color,text) => { g.append("line").attr("x1",x(val)).attr("x2",x(val)).attr("y1",0).attr("y2",innerHeight).style("stroke",color).style("stroke-width","2px").style("stroke-dasharray","4"); g.append("text").attr("x",x(val)).attr("y",-10).style("text-anchor","middle").style("font-size","11px").style("font-weight","bold").style("fill",color).text(text); };
+            addLine(qc.lsl,"#ff3b30","LSL"); addLine(qc.usl,"#ff3b30","USL"); addLine(qc.m,"#34c759","Mean");
         } else if (currentChartType === 'spc' && analysisState.type === 'spc') {
             const qc = analysisState.data.qc;
-            const x0 = d3.scaleLinear().domain([0, qc.d1.length - 1]).range([0, innerWidth]);
-            const yPad = (qc.ucl - qc.lcl) * 0.5;
-            const y = d3.scaleLinear().domain([Math.min(d3.min(qc.d1), qc.lcl) - yPad, Math.max(d3.max(qc.d1), qc.ucl) + yPad]).range([innerHeight, 0]);
-            
-            const xAxis = g.append("g").attr("class", "axis").attr("transform", `translate(0,${innerHeight})`);
-            const gridX = g.append("g").attr("class", "grid").attr("transform", `translate(0,${innerHeight})`);
-            g.append("g").attr("class", "grid").call(d3.axisLeft(y).tickSize(-innerWidth).tickFormat('')).style("stroke-dasharray", "4").style("stroke-opacity", "0.2");
-            g.append("g").attr("class", "axis").call(d3.axisLeft(y)).selectAll("text").style("font-family", "sans-serif").style("fill", "#86868b");
-            g.append("text").attr("x", innerWidth/2).attr("y", innerHeight + 35).style("text-anchor", "middle").style("font-size", "12px").style("fill", "#86868b").text("Observation Index");
-            
-            const drawCL = (val, color, text) => {
-                g.append("line").attr("x1", 0).attr("x2", innerWidth).attr("y1", y(val)).attr("y2", y(val)).style("stroke", color).style("stroke-width", "2px").style("stroke-dasharray", text==='Mean'?'none':'4');
-                g.append("text").attr("x", innerWidth + 5).attr("y", y(val)+4).style("font-size", "11px").style("font-weight", "bold").style("fill", color).text(text);
-            };
-            drawCL(qc.ucl, "#ff3b30", "UCL"); drawCL(qc.m, "#34c759", "Mean"); drawCL(qc.lcl, "#ff3b30", "LCL");
-
-            const clipId = "clip-" + Math.random().toString(36).substr(2, 9);
-            g.append("clipPath").attr("id", clipId).append("rect").attr("width", innerWidth).attr("height", innerHeight);
-            
-            const dataG = g.append("g").attr("clip-path", `url(#${clipId})`);
-            const linePath = dataG.append("path").datum(qc.d1).style("fill", "none").style("stroke", "#0071e3").style("stroke-width", "1.5px");
-            const dots = dataG.selectAll("circle").data(qc.d1).enter().append("circle").attr("r", 4).style("fill", d => (d > qc.ucl || d < qc.lcl) ? "#ff3b30" : "white").style("stroke", d => (d > qc.ucl || d < qc.lcl) ? "#ff3b30" : "#0071e3").style("stroke-width", "2px");
-
-            const zoom = d3.zoom().scaleExtent([1, 20]).translateExtent([[0, 0], [innerWidth, innerHeight]]).extent([[0, 0], [innerWidth, innerHeight]]).on("zoom", (e) => {
-                const newX = e.transform.rescaleX(x0);
-                xAxis.call(d3.axisBottom(newX).tickFormat(d3.format("d")).ticks(10));
-                gridX.call(d3.axisBottom(newX).ticks(10).tickSize(-innerHeight).tickFormat('')).style("stroke-dasharray", "4").style("stroke-opacity", "0.2");
-                linePath.attr("d", d3.line().x((d, i) => newX(i)).y(d => y(d)));
-                dots.attr("cx", (d, i) => newX(i)).attr("cy", d => y(d));
-            });
-            svg.append("rect").attr("width", innerWidth).attr("height", innerHeight).attr("transform", `translate(${margin.left},${margin.top})`).style("fill", "none").style("pointer-events", "all").call(zoom);
-
-            dots.on("mouseover", (e, d) => { tooltip.html(`Value: ${d}`).style("opacity", 1).style("left", (e.pageX+10)+"px").style("top", (e.pageY-10)+"px"); }).on("mouseout", () => tooltip.style("opacity", 0));
-            svg.select("rect").call(zoom.transform, d3.zoomIdentity);
-
+            const x0 = d3.scaleLinear().domain([0,qc.d1.length-1]).range([0,innerWidth]);
+            const yPad = (qc.ucl-qc.lcl)*0.5;
+            const y = d3.scaleLinear().domain([Math.min(d3.min(qc.d1),qc.lcl)-yPad, Math.max(d3.max(qc.d1),qc.ucl)+yPad]).range([innerHeight,0]);
+            const xAxis = g.append("g").attr("class","axis").attr("transform",`translate(0,${innerHeight})`);
+            const gridX = g.append("g").attr("class","grid").attr("transform",`translate(0,${innerHeight})`);
+            g.append("g").attr("class","grid").call(d3.axisLeft(y).tickSize(-innerWidth).tickFormat('')).style("stroke-dasharray","4").style("stroke-opacity","0.2");
+            g.append("g").attr("class","axis").call(d3.axisLeft(y)).selectAll("text").style("font-family","sans-serif").style("fill","#86868b");
+            g.append("text").attr("x",innerWidth/2).attr("y",innerHeight+35).style("text-anchor","middle").style("font-size","12px").style("fill","#86868b").text("Observation Index");
+            const drawCL = (val,color,text) => { g.append("line").attr("x1",0).attr("x2",innerWidth).attr("y1",y(val)).attr("y2",y(val)).style("stroke",color).style("stroke-width","2px").style("stroke-dasharray",text==='Mean'?'none':'4'); g.append("text").attr("x",innerWidth+5).attr("y",y(val)+4).style("font-size","11px").style("font-weight","bold").style("fill",color).text(text); };
+            drawCL(qc.ucl,"#ff3b30","UCL"); drawCL(qc.m,"#34c759","Mean"); drawCL(qc.lcl,"#ff3b30","LCL");
+            const clipId = "clip-"+Math.random().toString(36).substr(2,9);
+            g.append("clipPath").attr("id",clipId).append("rect").attr("width",innerWidth).attr("height",innerHeight);
+            const dataG = g.append("g").attr("clip-path",`url(#${clipId})`);
+            const linePath = dataG.append("path").datum(qc.d1).style("fill","none").style("stroke","#0071e3").style("stroke-width","1.5px");
+            const dots = dataG.selectAll("circle").data(qc.d1).enter().append("circle").attr("r",4).style("fill",d=>(d>qc.ucl||d<qc.lcl)?"#ff3b30":"white").style("stroke",d=>(d>qc.ucl||d<qc.lcl)?"#ff3b30":"#0071e3").style("stroke-width","2px");
+            const zoom = d3.zoom().scaleExtent([1,20]).translateExtent([[0,0],[innerWidth,innerHeight]]).extent([[0,0],[innerWidth,innerHeight]]).on("zoom",(e)=>{ const newX=e.transform.rescaleX(x0); xAxis.call(d3.axisBottom(newX).tickFormat(d3.format("d")).ticks(10)); gridX.call(d3.axisBottom(newX).ticks(10).tickSize(-innerHeight).tickFormat('')).style("stroke-dasharray","4").style("stroke-opacity","0.2"); linePath.attr("d",d3.line().x((d,i)=>newX(i)).y(d=>y(d))); dots.attr("cx",(d,i)=>newX(i)).attr("cy",d=>y(d)); });
+            svg.append("rect").attr("width",innerWidth).attr("height",innerHeight).attr("transform",`translate(${margin.left},${margin.top})`).style("fill","none").style("pointer-events","all").call(zoom);
+            dots.on("mouseover",(e,d)=>{tooltip.html(`Value: ${d}`).style("opacity",1).style("left",(e.pageX+10)+"px").style("top",(e.pageY-10)+"px");}).on("mouseout",()=>tooltip.style("opacity",0));
+            svg.select("rect").call(zoom.transform,d3.zoomIdentity);
         } else if (currentChartType === 'box') {
             const groups = Object.keys(analysisState.data);
-            const x = d3.scaleBand().domain(groups).range([0, innerWidth]).padding(0.5);
-            let minData = Infinity, maxData = -Infinity;
-            groups.forEach(k => { const ext = d3.extent(analysisState.data[k]); if(ext[0] < minData) minData = ext[0]; if(ext[1] > maxData) maxData = ext[1]; });
-            const pad = (maxData - minData)*0.1 || 1;
-            const y = d3.scaleLinear().domain([minData - pad, maxData + pad]).nice().range([innerHeight, 0]);
+            const x = d3.scaleBand().domain(groups).range([0,innerWidth]).padding(0.5);
+            let minData=Infinity, maxData=-Infinity;
+            groups.forEach(k=>{ const ext=d3.extent(analysisState.data[k]); if(ext[0]<minData) minData=ext[0]; if(ext[1]>maxData) maxData=ext[1]; });
+            const pad = (maxData-minData)*0.1||1;
+            const y = d3.scaleLinear().domain([minData-pad, maxData+pad]).nice().range([innerHeight,0]);
             renderAxes(x, y);
-
             const colors = d3.scaleOrdinal(d3.schemeCategory10);
-            groups.forEach((k, i) => {
-                const arr = [...analysisState.data[k]].sort(d3.ascending);
-                if(arr.length === 0) return;
-                const q1 = d3.quantile(arr, 0.25), median = d3.quantile(arr, 0.5), q3 = d3.quantile(arr, 0.75);
-                const iqr = q3 - q1;
-                const minV = arr.find(d => d >= q1 - 1.5*iqr) || q1;
-                const maxV = [...arr].reverse().find(d => d <= q3 + 1.5*iqr) || q3;
-                const outliers = arr.filter(d => d < minV || d > maxV);
-                const cx = x(k) + x.bandwidth()/2, bw = Math.min(x.bandwidth(), 100);
-
-                g.append("line").attr("x1", cx).attr("x2", cx).attr("y1", y(minV)).attr("y2", y(maxV)).style("stroke", "#1d1d1f").style("stroke-width", "1.5px");
-                g.append("rect").attr("x", cx - bw/2).attr("y", y(q3)).attr("height", Math.max(1, y(q1)-y(q3))).attr("width", bw).style("stroke", colors(i)).style("stroke-width", "2px").style("fill", colors(i)).style("fill-opacity", 0.15);
-                g.selectAll(`lines-${k}`).data([minV, median, maxV]).enter().append("line").attr("x1", cx - bw/2).attr("x2", cx + bw/2).attr("y1", d=>y(d)).attr("y2", d=>y(d)).style("stroke", d=>d===median?colors(i):"#1d1d1f").style("stroke-width", d=>d===median?"2.5px":"1.5px");
-                g.selectAll(`outlier-${k}`).data(outliers).enter().append("circle").attr("cx", cx).attr("cy", d=>y(d)).attr("r", 4).style("fill", "#ff3b30").style("stroke", "#fff")
-                 .on("mouseover", (e, d) => { tooltip.html(`Outlier: <b>${d}</b>`).style("opacity", 1).style("left", (e.pageX + 10)+"px").style("top", (e.pageY - 10)+"px"); }).on("mouseout", () => tooltip.style("opacity", 0));
+            groups.forEach((k,i)=>{
+                const arr = [...analysisState.data[k]].sort(d3.ascending); if(arr.length===0) return;
+                const q1=d3.quantile(arr,0.25), median=d3.quantile(arr,0.5), q3=d3.quantile(arr,0.75), iqr=q3-q1;
+                const minV=arr.find(d=>d>=q1-1.5*iqr)||q1, maxV=[...arr].reverse().find(d=>d<=q3+1.5*iqr)||q3;
+                const outliers=arr.filter(d=>d<minV||d>maxV), cx=x(k)+x.bandwidth()/2, bw=Math.min(x.bandwidth(),100);
+                g.append("line").attr("x1",cx).attr("x2",cx).attr("y1",y(minV)).attr("y2",y(maxV)).style("stroke","#1d1d1f").style("stroke-width","1.5px");
+                g.append("rect").attr("x",cx-bw/2).attr("y",y(q3)).attr("height",Math.max(1,y(q1)-y(q3))).attr("width",bw).style("stroke",colors(i)).style("stroke-width","2px").style("fill",colors(i)).style("fill-opacity",0.15);
+                g.selectAll(`lines-${k}`).data([minV,median,maxV]).enter().append("line").attr("x1",cx-bw/2).attr("x2",cx+bw/2).attr("y1",d=>y(d)).attr("y2",d=>y(d)).style("stroke",d=>d===median?colors(i):"#1d1d1f").style("stroke-width",d=>d===median?"2.5px":"1.5px");
+                g.selectAll(`outlier-${k}`).data(outliers).enter().append("circle").attr("cx",cx).attr("cy",d=>y(d)).attr("r",4).style("fill","#ff3b30").style("stroke","#fff").on("mouseover",(e,d)=>{tooltip.html(`Outlier: <b>${d}</b>`).style("opacity",1).style("left",(e.pageX+10)+"px").style("top",(e.pageY-10)+"px");}).on("mouseout",()=>tooltip.style("opacity",0));
             });
-
         } else if (currentChartType === 'hist') {
             const groups = Object.keys(analysisState.data);
-            let allVals = []; groups.forEach(k => allVals.push(...analysisState.data[k]));
-            const x = d3.scaleLinear().domain(d3.extent(allVals)).nice().range([0, innerWidth]);
+            let allVals=[]; groups.forEach(k=>allVals.push(...analysisState.data[k]));
+            const x = d3.scaleLinear().domain(d3.extent(allVals)).nice().range([0,innerWidth]);
             const histogram = d3.bin().domain(x.domain()).thresholds(x.ticks(15));
-            const binsByGroup = groups.map(k => ({ key: k, bins: histogram(analysisState.data[k]) }));
-            const maxY = d3.max(binsByGroup, grp => d3.max(grp.bins, b => b.length));
-            const y = d3.scaleLinear().domain([0, maxY]).range([innerHeight, 0]);
+            const binsByGroup = groups.map(k=>({key:k, bins:histogram(analysisState.data[k])}));
+            const maxY = d3.max(binsByGroup, grp=>d3.max(grp.bins,b=>b.length));
+            const y = d3.scaleLinear().domain([0,maxY]).range([innerHeight,0]);
             renderAxes(x, y);
-
             const colors = d3.scaleOrdinal(d3.schemeCategory10);
-            binsByGroup.forEach((grp, i) => {
-                g.selectAll(`rect-${grp.key}`).data(grp.bins).enter().append("rect").attr("x", d => x(d.x0) + 1).attr("y", d => y(d.length)).attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1)).attr("height", d => innerHeight - y(d.length)).style("fill", colors(i)).style("opacity", groups.length > 1 ? 0.5 : 0.85).style("stroke", "#fff")
-                 .on("mouseover", (e, d) => { if(d.length===0) return; tooltip.html(`Range: ${d.x0} - ${d.x1}<br>Count: <b>${d.length}</b>`).style("opacity", 1).style("left", (e.pageX+10)+"px").style("top", (e.pageY-10)+"px"); }).on("mouseout", () => tooltip.style("opacity", 0));
+            binsByGroup.forEach((grp,i)=>{
+                g.selectAll(`rect-${grp.key}`).data(grp.bins).enter().append("rect").attr("x",d=>x(d.x0)+1).attr("y",d=>y(d.length)).attr("width",d=>Math.max(0,x(d.x1)-x(d.x0)-1)).attr("height",d=>innerHeight-y(d.length)).style("fill",colors(i)).style("opacity",groups.length>1?0.5:0.85).style("stroke","#fff").on("mouseover",(e,d)=>{if(d.length===0)return;tooltip.html(`Range: ${d.x0} - ${d.x1}<br>Count: <b>${d.length}</b>`).style("opacity",1).style("left",(e.pageX+10)+"px").style("top",(e.pageY-10)+"px");}).on("mouseout",()=>tooltip.style("opacity",0));
             });
-            
-            if(groups.length > 1) {
-                const legend = g.append("g").attr("transform", `translate(${innerWidth - 100}, 10)`);
-                groups.forEach((k, i) => {
-                    legend.append("rect").attr("x", 0).attr("y", i*20).attr("width", 12).attr("height", 12).style("fill", colors(i)).style("opacity", 0.6);
-                    legend.append("text").attr("x", 18).attr("y", i*20 + 10).text(k).style("font-size", "12px").style("fill", "#86868b").style("font-family", "sans-serif");
-                });
+            if(groups.length>1) {
+                const legend=g.append("g").attr("transform",`translate(${innerWidth-100},10)`);
+                groups.forEach((k,i)=>{ legend.append("rect").attr("x",0).attr("y",i*20).attr("width",12).attr("height",12).style("fill",colors(i)).style("opacity",0.6); legend.append("text").attr("x",18).attr("y",i*20+10).text(k).style("font-size","12px").style("fill","#86868b").style("font-family","sans-serif"); });
             }
         }
     }
 
-    // --- 5. 強固版 匯出 PDF 報告功能 (Export PDF Report) ---
     function exportReport() {
         const reportPanel = document.getElementById('reportPanel');
         const actionsEl = document.querySelector('.chart-header-actions');
-        
-        if(!reportPanel || Object.keys(analysisState).length === 0) return alert("No analysis results to export.");
-
-        const originalDisplay = actionsEl.style.display;
-        const originalBoxShadow = reportPanel.style.boxShadow;
-        const originalBorder = reportPanel.style.border;
-        
-        // 隱藏干擾元素，確保 PDF 乾淨
-        actionsEl.style.display = 'none';
-        reportPanel.style.boxShadow = 'none';
-        reportPanel.style.border = 'none';
-
-        const typeSelect = document.getElementById('analysisType');
-        const reportTitle = document.createElement('h2');
-        reportTitle.id = 'pdfTitle';
-        reportTitle.innerText = `Statistical Analysis Report: ${typeSelect.options[typeSelect.selectedIndex].text}`;
-        reportTitle.style.textAlign = 'center';
-        reportTitle.style.marginBottom = '20px';
-        reportTitle.style.color = '#1d1d1f';
+        if(!reportPanel || Object.keys(analysisState).length===0) return alert("No analysis results to export.");
+        const originalDisplay=actionsEl.style.display, originalBoxShadow=reportPanel.style.boxShadow, originalBorder=reportPanel.style.border;
+        actionsEl.style.display='none'; reportPanel.style.boxShadow='none'; reportPanel.style.border='none';
+        const typeSelect=document.getElementById('analysisType');
+        const reportTitle=document.createElement('h2');
+        reportTitle.id='pdfTitle'; reportTitle.innerText=`Statistical Analysis Report: ${typeSelect.options[typeSelect.selectedIndex].text}`;
+        reportTitle.style.textAlign='center'; reportTitle.style.marginBottom='20px'; reportTitle.style.color='#1d1d1f';
         reportPanel.insertBefore(reportTitle, reportPanel.firstChild);
-
-        // 升級：強制 PDF 使用 1200px 寬度的桌機版面渲染，防斷頁處理
-        const opt = {
-            margin:       10, 
-            filename:     `QA_Report_${Date.now()}.pdf`,
-            image:        { type: 'jpeg', quality: 1.0 },
-            html2canvas:  { scale: 2, useCORS: true, logging: false, windowWidth: 1200 }, 
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-        };
-
-        // 加上 Promise Catch 防呆機制
-        html2pdf().set(opt).from(reportPanel).save().then(() => {
-            actionsEl.style.display = originalDisplay;
-            reportPanel.style.boxShadow = originalBoxShadow;
-            reportPanel.style.border = originalBorder;
-            const pt = document.getElementById('pdfTitle');
-            if(pt) pt.remove();
-        }).catch(err => {
-            console.error("PDF Export Error: ", err);
-            actionsEl.style.display = originalDisplay;
-            reportPanel.style.boxShadow = originalBoxShadow;
-            reportPanel.style.border = originalBorder;
-            const pt = document.getElementById('pdfTitle');
-            if(pt) pt.remove();
-            alert("PDF generation failed. Please try again.");
-        });
+        const opt={ margin:10, filename:`QA_Report_${Date.now()}.pdf`, image:{type:'jpeg',quality:1.0}, html2canvas:{scale:2,useCORS:true,logging:false,windowWidth:1200}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}, pagebreak:{mode:['avoid-all','css','legacy']} };
+        html2pdf().set(opt).from(reportPanel).save().then(()=>{ actionsEl.style.display=originalDisplay; reportPanel.style.boxShadow=originalBoxShadow; reportPanel.style.border=originalBorder; const pt=document.getElementById('pdfTitle'); if(pt) pt.remove(); }).catch(err=>{ console.error("PDF Export Error: ",err); actionsEl.style.display=originalDisplay; reportPanel.style.boxShadow=originalBoxShadow; reportPanel.style.border=originalBorder; const pt=document.getElementById('pdfTitle'); if(pt) pt.remove(); alert("PDF generation failed. Please try again."); });
     }
 </script>
 </body>
