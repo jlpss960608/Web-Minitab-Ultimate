@@ -8,11 +8,12 @@
     <meta name="apple-mobile-web-app-title" content="Minitab Ultimate">
     <meta name="theme-color" content="#f5f5f7">
     <link rel="apple-touch-icon" href="icon.png">
-    <title>Minitab Ultimate - QA/QC Engine</title>
+    <title>Minitab Ultimate</title>
     
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvg@4.0.1/lib/umd.js"></script>
 
     <style>
         :root {
@@ -679,21 +680,64 @@
             return `<table style="border-collapse:collapse;width:100%;table-layout:fixed;">${rows}</table>`;
         }
 
-        // ── 2. 截圖 #chartArea（html2pdf bundle 內含 html2canvas，直接截 DOM）──
+        // ── 2. SVG → Canvas：inline 化所有 CSS class，再用 canvg 精確渲染 ──
         let chartImgTag = '';
-        const chartArea = document.getElementById('chartArea');
-        const h2c = window.html2canvas || (typeof html2canvas !== 'undefined' ? html2canvas : null);
-        if (chartArea && chartArea.querySelector('svg') && h2c) {
+        const svgEl = document.querySelector('#chartArea svg');
+        if (svgEl) {
             try {
-                const canvas = await h2c(chartArea, {
-                    scale: 3,
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: '#ffffff',
-                    logging: false
+                const rect = svgEl.getBoundingClientRect();
+                const svgW = Math.round(rect.width)  || 600;
+                const svgH = Math.round(rect.height) || 350;
+
+                // 克隆 SVG 避免改動頁面
+                const svgClone = svgEl.cloneNode(true);
+                svgClone.setAttribute('width',  svgW);
+                svgClone.setAttribute('height', svgH);
+
+                // 把 SVG 內嵌的 <style> class 全部 inline 到每個元素
+                // axis text, axis path/line, grid line/path
+                const inlineMap = [
+                    ['.axis text',       { 'font-family':'sans-serif','font-size':'12px','fill':'#86868b' }],
+                    ['.axis path',       { 'stroke':'#d2d2d7' }],
+                    ['.axis line',       { 'stroke':'#d2d2d7' }],
+                    ['.grid line',       { 'stroke':'#e5e5ea','stroke-opacity':'0.7','stroke-dasharray':'4' }],
+                    ['.grid path',       { 'stroke-width':'0' }],
+                ];
+                inlineMap.forEach(([sel, styles]) => {
+                    svgClone.querySelectorAll(sel).forEach(el => {
+                        Object.entries(styles).forEach(([p, v]) => el.setAttribute(p, v));
+                    });
                 });
+                // 移除 <style> block，避免 canvg 重複套用
+                svgClone.querySelectorAll('style').forEach(s => s.remove());
+
+                const svgStr = new XMLSerializer().serializeToString(svgClone);
+                const canvas = document.createElement('canvas');
+                const scale  = 3;
+                canvas.width  = svgW * scale;
+                canvas.height = svgH * scale;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.scale(scale, scale);
+
+                // 優先用 canvg，fallback 用 Image
+                if (window.canvg && window.canvg.Canvg) {
+                    const v = await window.canvg.Canvg.from(ctx, svgStr, { ignoreMouse: true, ignoreAnimation: true });
+                    await v.render();
+                } else {
+                    // fallback: blob + Image
+                    const blob = new Blob([svgStr], { type:'image/svg+xml;charset=utf-8' });
+                    const url  = URL.createObjectURL(blob);
+                    await new Promise(res => {
+                        const img = new Image();
+                        img.onload  = () => { ctx.drawImage(img, 0, 0, svgW, svgH); URL.revokeObjectURL(url); res(); };
+                        img.onerror = () => { URL.revokeObjectURL(url); res(); };
+                        img.src = url;
+                    });
+                }
                 chartImgTag = `<img src="${canvas.toDataURL('image/png')}" style="width:100%;height:auto;display:block;border-radius:8px;border:1px solid #d2d2d7;">`;
-            } catch(e) { console.warn('html2canvas chart failed:', e); }
+            } catch(e) { console.warn('SVG render failed:', e); }
         }
 
         // ── 3. 組合 PDF HTML ──
@@ -710,16 +754,3 @@
         // ── 4. html2pdf 輸出 ──
         const opt = {
             margin:      [10, 10, 10, 10],
-            filename:    `QA_Report_${Date.now()}.pdf`,
-            image:       { type: 'png', quality: 1.0 },
-            html2canvas: { scale: 2, useCORS: true, logging: false, allowTaint: true },
-            jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak:   { mode: 'avoid-all' }
-        };
-
-        html2pdf().set(opt).from(pdfContent).save().catch(err => {
-            console.error("PDF Export Error:", err);
-            alert("PDF generation failed. Please try again.");
-        });
-    }
-</script>
